@@ -11,16 +11,19 @@ rescue Bundler::BundlerError => e
 end
 require 'rake'
 
+$:.unshift File.join(File.dirname(__FILE__), 'lib')
 require 'jeweler'
+require 'souffle'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "souffle"
   gem.homepage = "http://github.com/seryl/souffle"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{An orchestrator to create environments with Chef.}
+  gem.description = %Q{An orchestrator to create environments with Chef.}
   gem.email = "joshtoft@gmail.com"
   gem.authors = ["Josh Toft"]
+  gem.version = Souffle::VERSION
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
