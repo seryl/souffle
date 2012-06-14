@@ -19,8 +19,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "souffle"
   gem.homepage = "http://github.com/seryl/souffle"
   gem.license = "MIT"
-  gem.summary = %Q{An orchestrator to create environments with Chef.}
-  gem.description = %Q{An orchestrator to create environments with Chef.}
+  gem.summary = %Q{An orchestrator to create entire chef environments}
+  gem.description = %Q{An orchestrator to create entire chef environments}
   gem.email = "joshtoft@gmail.com"
   gem.authors = ["Josh Toft"]
   gem.version = Souffle::VERSION

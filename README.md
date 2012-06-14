@@ -1,6 +1,6 @@
 # souffle
 
-An orchestrator to create environments with Chef.
+An orchestrator to create entire chef environments
 
 ## Contributing to souffle
  
