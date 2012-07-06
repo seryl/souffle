@@ -1,9 +1,9 @@
 # souffle
 
-An orchestrator to create entire chef environments
+An orchestrator for setting up isolated chef-managed systems.
 
 ## Contributing to souffle
- 
+
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
 * Fork the project.
@@ -16,4 +16,3 @@ An orchestrator to create entire chef environments
 
 Copyright (c) 2012 Josh Toft. See LICENSE.txt for
 further details.
-

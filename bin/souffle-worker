@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
+require 'souffle'
+require 'souffle/worker'
+
+# The worker command line parser.
+class SouffleWorker < Thor
+
+  # Starts up the worker.
+  def start
+    Souffle::Worker.new.run
+  end
+end

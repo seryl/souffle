@@ -3,6 +3,15 @@ source "http://rubygems.org"
 # Example:
 #   gem "activesupport", ">= 2.3.5"
 
+gem "yajl-ruby"
+gem "eventmachine"
+gem "amqp"
+gem "state_machine"
+
+gem "right_aws"
+
+gem "thor"
+
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 group :development do
@@ -12,5 +21,6 @@ group :development do
   gem "cucumber", ">= 0"
   gem "bundler", "~> 1.1.0"
   gem "jeweler", "~> 1.8.3"
+  gem "ruby-graphiviz", :require => 'graphviz'
   gem (RUBY_VERSION =~ /^1\.9/ ? "simplecov" : "rcov"), ">= 0"
 end
