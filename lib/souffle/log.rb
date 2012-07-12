@@ -1,4 +1,4 @@
-$:.unshift Fir.dirname(__FILE__)
+$:.unshift File.dirname(__FILE__)
 require 'log/formatter'
 
 module Souffle
