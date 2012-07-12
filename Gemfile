@@ -17,10 +17,11 @@ gem "thor"
 group :development do
   gem "rspec", "~> 2.10.0"
   gem "yard", "~> 0.8"
+  gem "redcarpet", "~> 2.1.1"
   gem "rdoc", "~> 3.12"
   gem "cucumber", ">= 0"
   gem "bundler", "~> 1.1.0"
   gem "jeweler", "~> 1.8.3"
-  gem "ruby-graphiviz", :require => 'graphviz'
+  gem "ruby-graphiviz", "~> 1.0.8"
   gem (RUBY_VERSION =~ /^1\.9/ ? "simplecov" : "rcov"), ">= 0"
 end
