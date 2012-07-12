@@ -22,6 +22,6 @@ group :development do
   gem "cucumber", ">= 0"
   gem "bundler", "~> 1.1.0"
   gem "jeweler", "~> 1.8.3"
-  gem "ruby-graphiviz", "~> 1.0.8"
+  gem "ruby-graphviz", :require => "graphviz"
   gem (RUBY_VERSION =~ /^1\.9/ ? "simplecov" : "rcov"), ">= 0"
 end
