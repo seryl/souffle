@@ -13,3 +13,5 @@ class SouffleWorker < Thor
     Souffle::Worker.new.run
   end
 end
+
+SouffleWorker.start
