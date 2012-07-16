@@ -1,43 +1,62 @@
+require 'souffle/log'
+require 'mixlib/config'
+require 'yajl'
+
 module Souffle
   # The configuration object for the souffle server.
   class Config
 
-    # Loads the given config json into the configuration object.
+    extend Mixlib::Config
+
+    # Return the configuration itself upon inspection.
+    def self.inspect
+      configuration.inspect
+    end
+
+    # Loads a given file and passes it to the appropriate parser.
     #
-    # @param [ String ] config The configuration json.
-    def initialize(config)
+    # @raise [ IOError ] Any IO Exceptions that occur.
+    #
+    # @param [ String ] filename The filename to read.
+    def from_file(filename, parser="ruby")
+      send("from_file_#{parser}".to_sym, filename)
+    end
+
+    # Loads a given ruby file and runs instance_eval against it
+    # in the context of the current object.
+    #
+    # @raise [ IOError ] Any IO Exceptions that occur.
+    #
+    # @param [ String ] filename The file to read.
+    def from_file_ruby(filename)
+      self.instance_eval(IO.read(filename), filename, 1)
+    end
+
+    # Loads a given json file and merges the current context
+    # configuration with the updated hash.
+    #
+    # @raise [ IOError ] Any IO Exceptions that occur.
+    # @raise [ Yajl::ParseError ] Raises Yajl Parsing error on improper json.
+    #
+    # @param [ String ] filename The file to read.
+    def from_file_json(filename)
+      json = File.new(filename, 'r')
       parser = Yajl::Parser.new
-      @config = parser.parse(config)
+      configuration.merge!(parser.parse(json))
     end
 
-    # Return the configuration object requested or nil.
-    #
-    # @param [ String ] key The configuration key to request.
-    #
-    # @return [ String,Integer,true,false,nil ] The config key.
-    def [] key
-      @config[key.to_s]
+    # When you are using ActiveSupport, they monkey-patch 'daemonize' into Kernel.
+    # So while this is basically identical to what method_missing would do, we pull
+    # it up here and get a real method written so that things get dispatched
+    # properly.
+    config_attr_writer :daemonize do |v|
+      configure do |c|
+        c[:daemonize] = v
+      end
     end
 
-    # Sets the configuration object key.
-    #
-    # @param [ String,Symbol ] key The configuration key to set
-    def []=(key, value)
-      @config[key.to_s] = value
-    end
+    aws_access_key = ""
+    aws_access_secret = ""
 
-    # The configuration object in string format.
-    #
-    # @return [ String ] The configuration object in string format.
-    def to_s
-      @config.to_s
-    end
-
-    # Return the configuration keys from the config json.
-    #
-    # @return [ Array ] The list of keys in the config.
-    def keys
-      @config.keys
-    end
   end
 end

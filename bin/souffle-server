@@ -2,6 +2,6 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'souffle'
-require 'souffle/application/souffle-worker'
+require 'souffle/application/souffle-server'
 
-Souffle::Application::Worker.new.run
+Souffle::Application::Server.new.run

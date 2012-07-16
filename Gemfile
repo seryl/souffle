@@ -10,7 +10,8 @@ gem "state_machine"
 
 gem "right_aws"
 
-gem "thor"
+gem "mixlib-cli", ">= 1.1.0"
+gem "mixlib-log", ">= 1.3.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
