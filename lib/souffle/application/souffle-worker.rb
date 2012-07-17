@@ -1,9 +1,46 @@
-# The souffle worker command line parser.
-class SouffleWorker < Thor
+require 'souffle/application'
+require 'souffle/worker'
 
-  # Starts up the souffle worker.
-  desc "start", "Starts up the worker."
-  def start
-    Souffle::Worker.new.run
+# The souffle worker command line parser.
+class Souffle::Application::Worker < Souffle::Application
+
+  option :config_file,
+    :short => "-c CONFIG",
+    :long  => "--config CONFIG",
+    :default => "/etc/souffle/worker.rb",
+    :description => "The configuration file to use"
+
+  option :log_level,
+    :short => "-l LEVEL",
+    :long  => "--log_level LEVEL",
+    :description => "Set the log level (debug, info, warn, error, fatal)",
+    :proc => lambda { |l| l.to_sym }
+
+  option :log_location,
+    :short        => "-L LOGLOCATION",
+    :long         => "--logfile LOGLOCATION",
+    :description  => "Set the log file location, defaults to STDOUT",
+    :proc         => nil
+
+  option :help,
+    :short => "-h",
+    :long  => "--help",
+    :description => "Show this message",
+    :on => :tail,
+    :boolean => true,
+    :show_options => true,
+    :exit => 0
+
+  option :version,
+    :short => "-v",
+    :long  => "--version",
+    :description => "Show souffle version",
+    :boolean => true,
+    :proc => lambda { |v| puts "Souffle: #{::Souffle::VERSION}"},
+    :exit => 0
+
+  def initialize
+    super
+
   end
 end

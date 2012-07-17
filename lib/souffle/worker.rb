@@ -9,7 +9,7 @@ module Souffle
     #
     # @param [ String ] config The configuration JSON.
     def initialize(config)
-      @config = Souffle::Config.new(config)
+      Souffle::Config.from_file(config)
     end
 
     # Runs the orchestrator.

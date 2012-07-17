@@ -1,3 +1,5 @@
+require 'mixlib/cli'
+
 # The souffle application class for both server and worker.
 class Souffle::Application
   include Mixlib::CLI
@@ -34,6 +36,34 @@ class Souffle::Application
 
   def configure_souffle
     parse_options
+  end
+
+  def configure_logging
+    Souffle::Log.init(Souffle::Config[:log_location])
+    if ( Souffle::Config[:log_location] != STDOUT ) && STDOUT.tty? &&
+      ( !Souffle::Config[:daemonize] )
+      stdout_loger = Logger.new(STDOUT)
+      STDOUT.sync = true
+      stdout_logger = Souffle::Log.logger.formatter
+      Souffle::Log.loggers << stdout_logger
+    end
+    Souffle::Log.level = Souffle::Config[:log_level]
+  end
+
+  def run
+    reconfigure
+    setup_application
+    run_application
+  end
+
+  def setup_application
+    error_msg = "#{self.to_s}: you must override setup_application"
+    raise Souffle::Exceptions::Application, error_msg
+  end
+
+  def run_application
+    error_msg = "#{self.to_s}: you must override run_application"
+    raise Souffle::Exceptions::Application, error_msg
   end
 
   class << self

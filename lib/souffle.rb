@@ -9,6 +9,7 @@ module Souffle
 end
 
 require 'souffle/log'
+require 'souffle/exceptions'
 require 'souffle/config'
 require 'souffle/provider'
 require 'souffle/node'
