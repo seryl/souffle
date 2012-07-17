@@ -10,7 +10,7 @@ gem "state_machine", "~> 1.1.2"
 
 gem "right_aws", "~> 3.0.4"
 
-gem "thor", "~> 0.15.4"
+gem "mixlib-cli"
 gem "mixlib-config", ">= 1.1.0"
 gem "mixlib-log", ">= 1.3.0"
 
