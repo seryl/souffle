@@ -1,0 +1,4 @@
+random_something 1234
+aws_access_key "test_key"
+aws_access_secret "test_secret"
+
