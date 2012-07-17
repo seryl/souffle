@@ -65,6 +65,9 @@ module Souffle
       end
     end
 
+    log_level :info
+    log_location STDOUT
+
     aws_access_key = ""
     aws_access_secret = ""
 
