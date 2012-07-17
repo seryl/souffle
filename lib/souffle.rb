@@ -1,6 +1,7 @@
 $:.unshift File.dirname(__FILE__)
 require 'yajl'
 require 'eventmachine'
+require 'state_machine'
 require 'right_aws'
 
 # An orchestrator for setting up isolated chef-managed systems.
