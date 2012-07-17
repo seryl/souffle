@@ -55,10 +55,10 @@ module Souffle
       configuration.merge!(parser.parse(input))
     end
 
-    # When you are using ActiveSupport, they monkey-patch 'daemonize' into Kernel.
-    # So while this is basically identical to what method_missing would do, we pull
-    # it up here and get a real method written so that things get dispatched
-    # properly.
+    # When you are using ActiveSupport, they monkey-patch 'daemonize' into
+    # Kernel. So while this is basically identical to what method_missing
+    # would do, we pull it up here and get a real method written so that
+    # things get dispatched properly.
     config_attr_writer :daemonize do |v|
       configure do |c|
         c[:daemonize] = v

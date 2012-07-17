@@ -4,8 +4,8 @@ require 'mixlib/cli'
 class Souffle::Application
   include Mixlib::CLI
 
-  class Wakeup < Exception
-  end
+  # Added a Wakeup exception.
+  class Wakeup < Exception; end
 
   # Initialize the application, setting up default handlers.
   def initialize
@@ -29,15 +29,29 @@ class Souffle::Application
     end
   end
 
+  # Reconfigure the application and logging.
   def reconfigure
     configure_souffle
     configure_logging
   end
 
+  # Configure the application throwing a warning when there is no config file.
   def configure_souffle
     parse_options
+
+    begin
+      ::File.open(config[:config_file]) { |f| apply_config(f.path) }
+    rescue Errno::ENOENT => error
+      noconfig = "Did not find config file: #{config[:config_file]}"
+      Souffle::Log.warn("*****************************************")
+      Souffle::Log.warn("#{noconfig}, using command line options.")
+      Souffle::Log.warn("*****************************************")
+    end
   end
 
+  # Configures the logging in a relatively sane fashion.
+  # Only prints to STDOUT given a valid tty.
+  # Does not write to STDOUT when daemonizing.
   def configure_logging
     Souffle::Log.init(Souffle::Config[:log_location])
     if ( Souffle::Config[:log_location] != STDOUT ) && STDOUT.tty? &&
@@ -50,33 +64,51 @@ class Souffle::Application
     Souffle::Log.level = Souffle::Config[:log_level]
   end
 
+  # Run the application itself. Configure, setup, and then run.
   def run
     reconfigure
     setup_application
     run_application
   end
 
+  # Placeholder for setup_application, intended to be overridden.
+  # 
+  # @raise Souffle::Exceptions::Application Must be overridden.
   def setup_application
     error_msg = "#{self.to_s}: you must override setup_application"
     raise Souffle::Exceptions::Application, error_msg
   end
 
+  # Placeholder for run_application, intended to be overridden.
+  # 
+  # @raise Souffle::Exceptions::Application Must be overridden.
   def run_application
     error_msg = "#{self.to_s}: you must override run_application"
     raise Souffle::Exceptions::Application, error_msg
   end
 
+  private
+
+  # Apply the configuration given a file path.
+  # 
+  # @param [ String ] config_file_path The path to the configuration file.
+  def apply_config(config_file_path)
+    Souffle::Config.from_file(config_file_path)
+    Souffle::Config.merge!(config)
+  end
+
   class << self
+    # Present a debug stracktrace upon an error.
+    # Gives a readable backtrace with a timestamp.
+    # 
+    # @param [ Exception ] e The raised exception.
+    def debug_stacktrace(e)
+      message = "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
+      stacktrace_out = "Generated at #{Time.now.to_s}\n"
+      stacktrace_out += message
 
-    # # Writes a debug stracktrace to a
-    # def debug_stacktrace(e)
-    #   message = "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
-    #   stacktrace_out = "Generated at #{Time.now.to_s}\n"
-    #   stacktrace_out += message
-
-    #   # Souffle::Log.fatal("Stacktrace dumped to ")
-    #   Souffle::Log.debug(message)
-    # end
+      Souffle::Log.debug(message)
+    end
 
     # Log a fatal error message to both STDERR and the Logger,
     # exit the application with a fatal message.
