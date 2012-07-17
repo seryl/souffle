@@ -18,7 +18,7 @@ module Souffle
     # @raise [ IOError ] Any IO Exceptions that occur.
     #
     # @param [ String ] filename The filename to read.
-    def from_file(filename, parser="ruby")
+    def self.from_file(filename, parser="ruby")
       send("from_file_#{parser}".to_sym, filename)
     end
 
@@ -28,7 +28,7 @@ module Souffle
     # @raise [ IOError ] Any IO Exceptions that occur.
     #
     # @param [ String ] filename The file to read.
-    def from_file_ruby(filename)
+    def self.from_file_ruby(filename)
       self.instance_eval(IO.read(filename), filename, 1)
     end
 
@@ -39,10 +39,20 @@ module Souffle
     # @raise [ Yajl::ParseError ] Raises Yajl Parsing error on improper json.
     #
     # @param [ String ] filename The file to read.
-    def from_file_json(filename)
-      json = File.new(filename, 'r')
+    def self.from_file_json(filename)
+      self.from_input_json(IO.read(filename))
+    end
+
+    # Loads a given json input and merges the current context
+    # configuration with the updated hash.
+    #
+    # @raise [ IOError ] Any IO Exceptions that occur.
+    # @raise [ Yajl::ParseError ] Raises Yajl Parsing error on improper json.
+    #
+    # @param [ String ] input The json configuration input.
+    def self.from_stream_json(input)
       parser = Yajl::Parser.new
-      configuration.merge!(parser.parse(json))
+      configuration.merge!(parser.parse(input))
     end
 
     # When you are using ActiveSupport, they monkey-patch 'daemonize' into Kernel.

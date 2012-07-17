@@ -2,7 +2,6 @@ require 'souffle/application'
 
 # The server command line parser.
 class Souffle::Application::Server < Souffle::Application
-  include Mixlib::CLI
 
     def run
       trap("INT") { exit 0 }

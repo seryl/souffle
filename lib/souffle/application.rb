@@ -1,5 +1,3 @@
-require 'mixlib/cli'
-
 # The souffle application class for both server and worker.
 class Souffle::Application
   include Mixlib::CLI
@@ -40,15 +38,15 @@ class Souffle::Application
 
   class << self
 
-    # Writes a debug stracktrace to a
-    def debug_stacktrace(e)
-      message = "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
-      stacktrace_out = "Generated at #{Time.now.to_s}\n"
-      stacktrace_out += message
+    # # Writes a debug stracktrace to a
+    # def debug_stacktrace(e)
+    #   message = "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
+    #   stacktrace_out = "Generated at #{Time.now.to_s}\n"
+    #   stacktrace_out += message
 
-      # Souffle::Log.fatal("Stacktrace dumped to ")
-      Souffle::Log.debug(message)
-    end
+    #   # Souffle::Log.fatal("Stacktrace dumped to ")
+    #   Souffle::Log.debug(message)
+    # end
 
     # Log a fatal error message to both STDERR and the Logger,
     # exit the application with a fatal message.
