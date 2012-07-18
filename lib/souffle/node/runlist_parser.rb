@@ -37,7 +37,9 @@ module Souffle
       # 
       # @param [ Hash ] runlist_hash The runlist hash to test.
       # 
-      # @raise [ InvalidRunlistName, InvalidRunlistType ] Invalid exceptions.
+      # @raise [ InvalidRunlistName, InvalidRunlistType ] Raises exceptions
+      # when the runlist match failed, the type wasn't a recipe or role,
+      # or when the name itself isn't a valid word.
       def gaurentee_valid_keys(runlist_hash)
         if runlist_hash.nil?
           raise Souffle::Exceptions::InvalidRunlistType,
@@ -57,7 +59,7 @@ module Souffle
       # 
       # @param [ Hash ] runlist_hash The runlist hash to test.
       # 
-      # @raise [ RunlistNameError ] Runlist Name is invalid.
+      # @raise [ InvalidRunlistName ] Runlist Name is invalid.
       def gaurentee_name_is_word(runlist_hash)
         unless (/\w+/).match(runlist_hash["name"])[0] == runlist_hash["name"]
           raise Souffle::Exceptions::InvalidRunlistName,
