@@ -1,18 +1,12 @@
 module Souffle
-  # The souffle orchestrator and management daemon.
+  # The souffle server and management daemon.
   class Server
 
-    # The configuration object.
-    attr_accessor :config
-
-    # Creates a new souffle orchestrator node.
-    #
-    # @param [ String ] config The configuration JSON.
-    def initialize(config)
-      Souffle::Config.from_file(config)
+    # Creates a new souffle server.
+    def initialize
     end
 
-    # Runs the orchestrator.
+    # Runs the server.
     def run
     end
     

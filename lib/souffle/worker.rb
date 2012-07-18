@@ -1,19 +1,14 @@
 module Souffle
-  # Worker daemon for handling requests from the orchestrator.
+  # The souffle worker daemon.
   class Worker
 
-    # The configuration object.
-    attr_accessor :config
-
-    # Creates a new souffle worker node.
-    #
-    # @param [ String ] config The configuration JSON.
-    def initialize(config)
-      Souffle::Config.from_file(config)
+    # Creates a new souffle worker.
+    def initialize
     end
 
-    # Runs the orchestrator.
+    # Runs the worker.
     def run
     end
+
   end
 end
