@@ -1,7 +1,21 @@
-$:.unshift File.dirname(__FILE__)
+# The souffle cloud provider class.
+class Souffle::Provider
+  def initialize
+  end
 
-# Module namespace for souffle providers.
-module Souffle::Provider; end
+  # The name of the given provider. Intended to be overridden.
+  # 
+  # @raise Souffle::Exceptions::Provider This definition must be overridden.
+  def name
+    error_msg = "#{self.to_s}: you must override name"
+    raise Souffle::Exceptions::Provider, error_msg
+  end
 
-require 'provider/base'
-require 'provider/aws'
+  # Creates a raid array for a given provider. Intended to be overridden.
+  # 
+  # @raise Souffle::Exceptions::Provider This definition must be overridden.
+  def create_raid
+    error_msg = "#{self.to_s}: you must override create_raid"
+    raise Souffle::Exceptions::Provider, error_msg
+  end
+end

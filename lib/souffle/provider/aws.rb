@@ -1,8 +1,12 @@
-$:.unshift File.dirname(__FILE__)
-require 'base'
+require 'souffle/provider'
 
-module Souffle::Provider
-  # The AWS souffle provider.
-  class AWS < Souffle::Provider::Base
+# The AWS souffle provider.
+class Souffle::Provider::AWS < Souffle::Provider
+  
+  # The name of the given provider.
+  def name; "AWS"; end
+
+  # Creates a raid array with the given requirements.
+  def create_raid
   end
 end
