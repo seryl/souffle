@@ -28,7 +28,16 @@ pkg
 #
 # For MacOS:
 #
-#.DS_Store
+.DS_Store
+
+# Gemfile.lock
+Gemfile.lock
+
+# RVM
+.rvmrc
+
+# Gemspec
+souffle.gemspec
 
 # For TextMate
 #*.tmproj
