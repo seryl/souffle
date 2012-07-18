@@ -4,57 +4,71 @@ describe "Souffle::Node::RunListParser" do
   it "should be able to check whether a hash name is a valid word" do
     ex = Hash.new
     ex["name"] = "AwesomeWord"
-    Souffle::Node::RunListParser.name_is_word(ex).should eql(true)
+    d = lambda { Souffle::Node::RunListParser.gaurentee_name_is_word(ex) }
+    d.should_not raise_error
   end
 
-  it "should return false when the hash name is spaced" do
+  it "should raise an error when the hash name is spaced" do
     ex = Hash.new
     ex["name"] = "AwesomeWord SecondWord"
-    Souffle::Node::RunListParser.name_is_word(ex).should eql(false)
+    d = lambda { Souffle::Node::RunListParser.gaurentee_name_is_word(ex) }
+    d.should raise_error
   end
 
-  it "should return false when the hash name contains invalid characters" do
+  it "should raise an error when the hash name contains invalid characters" do
     ex = Hash.new
     ex["name"] = "AwesomeWord**"
-    Souffle::Node::RunListParser.name_is_word(ex).should eql(false)
+    d = lambda { Souffle::Node::RunListParser.gaurentee_name_is_word(ex) }
+    d.should raise_error
   end
 
-  it "should be invalid when the hash is empty" do
+  it "should raise an error when the hash is empty" do
     ex = Hash.new
-    Souffle::Node::RunListParser.is_valid(ex).should eql(false)
+    d = lambda { Souffle::Node::RunListParser.gaurentee_valid_keys(ex) }
+    d.should raise_error
   end
 
-  it "should be invalid when the hash is nil" do
+  it "should raise an error when the hash is nil" do
     ex = nil
-    Souffle::Node::RunListParser.is_valid(ex).should eql(false)
+    d = lambda { Souffle::Node::RunListParser.gaurentee_valid_keys(ex) }
+    d.should raise_error
   end
 
-  it "should be invalid when the name is nil but the type is valid" do
+  it "should raise an error when the name is nil but the type is valid" do
     ex = Hash.new
     ex["name"] = nil
     ex["type"] = "role"
-    Souffle::Node::RunListParser.is_valid(ex).should eql(false)
+    d = lambda { Souffle::Node::RunListParser.gaurentee_valid_keys(ex) }
+    d.should raise_error
   end
 
-  it "should be invalid when the name is empty but the type is valid" do
+  it "should raise an error when the name is empty but the type is valid" do
     ex = Hash.new
     ex["name"] = ""
     ex["type"] = "recipe"
-    Souffle::Node::RunListParser.is_valid(ex).should eql(false)
+    d = lambda { Souffle::Node::RunListParser.gaurentee_valid_keys(ex) }
+    d.should raise_error
   end
 
-  it "should be invalid when the name is valid but the type is nil" do
+  it "should raise an error when the name is valid but the type is nil" do
     ex = Hash.new
     ex["name"] = "best_name"
     ex["type"] = nil
-    Souffle::Node::RunListParser.is_valid(ex).should eql(false)
+    d = lambda { Souffle::Node::RunListParser.gaurentee_valid_keys(ex) }
+    d.should raise_error
   end
 
-  it "should be invalid when the name is valud but the type is empty" do
+  it "should raise an error when the name is valud but the type is empty" do
     ex = Hash.new
     ex["name"] = "anotherone"
     ex["type"] = ""
-    Souffle::Node::RunListParser.is_valid(ex).should eql(false)
+    d = lambda { Souffle::Node::RunListParser.gaurentee_valid_keys(ex) }
+    d.should raise_error
+  end
+
+    it "should raise an error when parsing an invalid type" do
+    d = lambda { Souffle::Node::RunListParser.parse("rofsdfsdle[somerole]") }
+    d.should raise_error
   end
 
   it "should be able to parse a role" do
