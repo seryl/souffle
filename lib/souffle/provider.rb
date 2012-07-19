@@ -1,6 +1,12 @@
 # The souffle cloud provider class.
 class Souffle::Provider
-  def initialize
+  
+  # The setup method for the provider. Intended to be overridden.
+  # 
+  # @raise [Souffle::Exceptions::Provider] This definition must be overridden.
+  def setup
+    error_msg = "#{self.to_s}: you must override setup"
+    raise Souffle::Exceptions::Provider, error_msg
   end
 
   # The name of the given provider. Intended to be overridden.
