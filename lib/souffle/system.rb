@@ -18,19 +18,20 @@ module Souffle
     # 
     # @param [ String ] provider The provider to use for the given system.
     def initialize(provider="Vagrant")
-      setup_provider(provider)
+      initialize_provider(provider)
       super() # NOTE: This is here to initialize state_machine.
     end
 
-    def setup_provider(provider)
+    def initialize_provider(provider)
       @provider = Souffle::Provider.const_get(provider.to_sym).new
     rescue
-      raise InvalidProvider,
+      raise Souffle::Exceptions::InvalidProvider,
         "The provider Souffle::Provider::#{provider} does not exist."
     end
 
-    # The proxy to initialize a provider.
-    def initialize_provider
+    # Proxy to the provider setup routine.
+    def setup_provider
+      @provider.setup
     end
 
     # Adds the root node to the system.
