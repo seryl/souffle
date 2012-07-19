@@ -63,4 +63,15 @@ describe "Souffle::Node" do
     lambda { @node.add_child(@child) }.should raise_error
     @child = nil
   end
+  
+  it "should be able to test node equality" do
+    @node.dependencies << "role[awesome]"
+    @node.run_list << "recipe[the_best]"
+
+    @node2 = Souffle::Node.new
+    @node2.dependencies << "role[awesome]"
+    @node2.run_list << "recipe[the_best]"
+
+    @node.should eql(@node2)
+  end
 end

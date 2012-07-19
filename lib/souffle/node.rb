@@ -62,5 +62,13 @@ module Souffle
       node.parent = self
       @children.push(node)
     end
+
+    # Equality comparator for nodes.
+    # 
+    # @param [ Souffle::Node ] other The node to compare against.
+    def eql?(other)
+      @dependencies == other.dependencies && @run_list == other.run_list
+    end
+    
   end
 end
