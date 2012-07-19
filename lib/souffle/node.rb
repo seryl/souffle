@@ -29,7 +29,7 @@ module Souffle
     # 
     # @return [ true,false ] Whether or not this node depends on the given.
     def depends_on?(node)
-      self.dependencies.each { |d| return true if node.run_list.include? d }
+      @dependencies.each { |d| return true if node.run_list.include? d }
       false
     end
 
