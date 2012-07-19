@@ -40,7 +40,7 @@ module Souffle
     #
     # @param [ String ] filename The file to read.
     def self.from_file_json(filename)
-      self.from_input_json(IO.read(filename))
+      self.from_stream_json(IO.read(filename))
     end
 
     # Loads a given json input and merges the current context
@@ -51,7 +51,7 @@ module Souffle
     #
     # @param [ String ] input The json configuration input.
     def self.from_stream_json(input)
-      parser = Yajl::Parser.new
+      parser = Yajl::Parser.new(:symbolize_keys => true)
       configuration.merge!(parser.parse(input))
     end
 

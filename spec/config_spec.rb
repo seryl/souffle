@@ -1,6 +1,14 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "Souffle::Config" do
+  after(:each) do
+    Souffle::Config.configure do |config|
+      config.delete(:random_something)
+    end
+    Souffle::Config[:aws_access_key] = ""
+    Souffle::Config[:aws_access_secret] = ""
+  end
+
   it "should be able to read from a ruby config file" do
     config = File.join(File.dirname(__FILE__), 'config', 'example.rb')
     Souffle::Config.from_file(config)
