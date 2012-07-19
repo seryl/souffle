@@ -18,7 +18,6 @@ gem "mixlib-log", ">= 1.3.0"
 # Include everything needed to run rake, tests, features, etc.
 group :development do
   gem "rspec", "~> 2.10.0"
-  gem "fakefs", "~> 0.4.0"
   gem "yard", "~> 0.8"
   gem "redcarpet", "~> 2.1.1"
   gem "rdoc", "~> 3.12"
