@@ -31,5 +31,20 @@ module Souffle
       @run_list = Souffle::Node::RunList.new
     end
 
+    # Check whether or not a given node depends on another node.
+    # 
+    # @param [ Souffle::Node ] node Check to see whether this node depends
+    # 
+    # @return [ true,false ] Whether or not this node depends on the given.
+    def depends_on?(node)
+      depends = false
+      self.dependencies.each do |d|
+        if node.run_list.include? d
+          depends = true
+        end
+      end
+      depends
+    end
+
   end
 end

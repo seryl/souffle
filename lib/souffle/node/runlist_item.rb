@@ -10,6 +10,7 @@ module Souffle
     # @raise [ InvalidRunlistName, InvalidRunlistType ] Raises exceptions when
     # the runlist item or type isn't a proper chef role or recipe.
     def initialize(item=nil)
+      @original_item = item
       @item = Souffle::Node::RunListParser.parse(item)
     end
 
@@ -26,5 +27,20 @@ module Souffle
     def type
       @item["type"]
     end
+
+    # Returns the RunListItem as it's original string.
+    def to_s
+      @original_item
+    end
+
+    # Overriding the default equality comparator to use string representation.
+    # 
+    # @param [ Souffle::Node::RunListItem ] runlist_item
+    # 
+    # @return [ true,false ] Whether or not the objects are equal.
+    def ==(runlist_item)
+      self.to_s == runlist_item.to_s
+    end
+
   end
 end
