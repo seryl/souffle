@@ -59,7 +59,7 @@ describe "Souffle::Node" do
 
   it "should raise and error on adding an invalid child" do
     child = []
-    lambda { node.add_child(@child) }.should raise_error
+    lambda { node.add_child(child) }.should raise_error
     child = nil
   end
 
