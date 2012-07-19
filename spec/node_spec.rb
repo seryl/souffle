@@ -38,40 +38,39 @@ describe "Souffle::Node" do
 
   it "should be able to test whether or not a node depends on another" do
     @node.run_list << "role[dns_server]"
-    @node2 = Souffle::Node.new
-    @node2.dependencies << "role[dns_server]"
-    @node2.depends_on?(@node).should eql(true)
-    @node2 = nil
+    node2 = Souffle::Node.new
+    node2.dependencies << "role[dns_server]"
+    node2.depends_on?(@node).should eql(true)
+    node2 = nil
   end
 
   it "should not depend on another node when there are no dependencies" do
     @node.run_list << "role[dns_server]"
-    @node2 = Souffle::Node.new
-    @node2.depends_on?(@node).should eql(false)
-    @node2 = nil
+    node2 = Souffle::Node.new
+    node2.depends_on?(@node).should eql(false)
+    node2 = nil
   end
 
   it "should be able to add child nodes" do
-    @child = Souffle::Node.new
-    lambda { @node.add_child(@child) }.should_not raise_error
-    @node.children.should eql([@child])
-    @child = nil
+    child = Souffle::Node.new
+    lambda { @node.add_child(child) }.should_not raise_error
+    @node.children.should eql([child])
   end
 
   it "should raise and error on adding an invalid child" do
-    @child = []
-    lambda { @node.add_child(@child) }.should raise_error
-    @child = nil
+    child = []
+    lambda { node.add_child(@child) }.should raise_error
+    child = nil
   end
 
   it "should be able to iterate across children" do
-    @child1 = Souffle::Node.new
-    @child2 = Souffle::Node.new
-    @node.add_child(@child1)
-    @node.add_child(@child2)
+    child1 = Souffle::Node.new
+    child2 = Souffle::Node.new
+    @node.add_child(child1)
+    @node.add_child(child2)
 
-    children = [@child1, @child2]
-    @node.each_child { |child| children.delete(child) }
+    children = [child1, child2]
+    @node.each_child { |c| children.delete(c) }
     children.should eql([])
   end
 
@@ -79,11 +78,11 @@ describe "Souffle::Node" do
     @node.dependencies << "role[awesome]"
     @node.run_list << "recipe[the_best]"
 
-    @node2 = Souffle::Node.new
-    @node2.dependencies << "role[awesome]"
-    @node2.run_list << "recipe[the_best]"
+    node2 = Souffle::Node.new
+    node2.dependencies << "role[awesome]"
+    node2.run_list << "recipe[the_best]"
 
-    @node.should eql(@node2)
+    @node.should eql(node2)
   end
 
   it "should have an initial state of `:uninitialized`" do
