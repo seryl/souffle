@@ -11,20 +11,8 @@ module Souffle
     attr_accessor :dependencies, :run_list, :parent
     attr_reader :children
 
-    # state_machine :initial => :nonexistant do
-    #   after_transition any => :creating, :do => :create
-    #   after_transition any => :
-
-    #   event :created do
-    #     transition :creating => :configuring
-    #   end
-
-    #   event :configuring do
-    #     transition :
-
-    #   event :started do
-    #     transition :starting => :initializing
-    # end
+    state_machine :state, :initial => :nonexistant do
+    end
 
     # Creates a new souffle node with bare dependencies and run_list.
     def initialize
@@ -32,6 +20,7 @@ module Souffle
       @run_list = Souffle::Node::RunList.new
       @parent = nil
       @children = []
+      super() # NOTE: This is here to initialize state_machine.
     end
 
     # Check whether or not a given node depends on another node.

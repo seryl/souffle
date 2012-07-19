@@ -85,4 +85,8 @@ describe "Souffle::Node" do
 
     @node.should eql(@node2)
   end
+
+  it "should have an initial state of `:nonexistant`" do
+    @node.state_name.should eql(:nonexistant)
+  end
 end
