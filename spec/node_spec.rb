@@ -9,22 +9,30 @@ describe "Souffle::Node" do
     @node = nil
   end
 
-  it "should be able to describe a single node" do
-  end
-
   it "should be able to setup dependencies" do
-    @node.dependencies << "role[chef_server]"
-    @node.dependencies.should eql(["role[chef_server]"])
-  end
-
-  it "should fail on improper dependencies" do
+    @node.dependencies << "recipe[chef_server]"
+    item = @node.dependencies.first
+    item.type.should eql("recipe")
+    item.name.should eql("chef_server")
   end
 
   it "should be able to setup the run_list" do
-    @node.run_list << "example_role"
-    @node.run_list.should eql(["example_role"])
+    @node.run_list << "role[example_role]"
+    item = @node.run_list.first
+    item.type.should eql("role")
+    item.name.should eql("example_role")
   end
 
-  it "should fail on improper run_list" do
+  it "should fail on improper run_list type" do
+    lambda { @node.run_list<<("b0rken[role]") }.should raise_error
+  end
+
+  it "should fail on improper run_list name" do
+    lambda { @node.run_list << "role[GT***]}" }.should raise_error
+  end
+
+  it "should be able to describe a single node" do
+    @node.run_list << "recipe[chef_server::rubygems_install]"
+    @node.run_list << "role[dns_server]"
   end
 end
