@@ -11,7 +11,7 @@ module Souffle
     attr_accessor :dependencies, :run_list, :parent
     attr_reader :children
 
-    state_machine :state, :initial => :nonexistant do
+    state_machine :state, :initial => :uninitialized do
     end
 
     # Creates a new souffle node with bare dependencies and run_list.
