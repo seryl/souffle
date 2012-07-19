@@ -25,6 +25,7 @@ module Souffle
     #     transition :starting => :initializing
     # end
 
+    # Creates a new souffle node with bare dependencies and run_list.
     def initialize
       @dependencies = Souffle::Node::RunList.new
       @run_list = Souffle::Node::RunList.new
