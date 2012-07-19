@@ -1,13 +1,36 @@
 module Souffle
   # A system description with nodes and the statemachine to manage them.
   class System
-    attr_reader :nodes, :root
+    attr_reader :nodes, :root, :provider
 
     state_machine :state, :initial => :uninitialized do
+      before_transition :uninitialized => any - :uninitialized,
+        :do => :initialize_provider
+
+      around_transition do |system, transition, block|
+        start = Time.now
+        block.call
+        system.time_used += Time.now - start
+      end
     end
 
-    def initialize(root=nil)
+    # Creates a new souffle system, defaulting to using Vagrant as a provider.
+    # 
+    # @param [ String ] provider The provider to use for the given system.
+    def initialize(provider="Vagrant")
+      setup_provider(provider)
       super() # NOTE: This is here to initialize state_machine.
+    end
+
+    def setup_provider(provider)
+      @provider = Souffle::Provider.const_get(provider.to_sym).new
+    rescue
+      raise InvalidProvider,
+        "The provider Souffle::Provider::#{provider} does not exist."
+    end
+
+    # The proxy to initialize a provider.
+    def initialize_provider
     end
 
     # Adds the root node to the system.
