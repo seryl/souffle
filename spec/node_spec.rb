@@ -50,4 +50,17 @@ describe "Souffle::Node" do
     @node2.depends_on?(@node).should eql(false)
     @node2 = nil
   end
+
+  it "should be able to add child nodes" do
+    @child = Souffle::Node.new
+    lambda { @node.add_child(@child) }.should_not raise_error
+    @node.children.should eql([@child])
+    @child = nil
+  end
+
+  it "should raise and error on adding an invalid child" do
+    @child = []
+    lambda { @node.add_child(@child) }.should raise_error
+    @child = nil
+  end
 end

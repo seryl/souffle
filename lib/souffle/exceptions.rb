@@ -11,5 +11,8 @@ module Souffle
     class InvalidRunlistName < RuntimeError; end
     # Runlist Type cannot be nil or empty and must be one of (role|recipe).
     class InvalidRunlistType < RuntimeError; end
+
+    # Node children must respond to dependencies and run_list.
+    class InvalidChild < RuntimeError; end
   end
 end
