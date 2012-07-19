@@ -63,12 +63,19 @@ module Souffle
       @children.push(node)
     end
 
+    # Iterator method for children.
+    # 
+    # @yield [ Souffle::Node,nil ] The child node.
+    def each_child
+      @children.each { |child| yield child }
+    end
+
     # Equality comparator for nodes.
     # 
     # @param [ Souffle::Node ] other The node to compare against.
     def eql?(other)
       @dependencies == other.dependencies && @run_list == other.run_list
     end
-    
+
   end
 end

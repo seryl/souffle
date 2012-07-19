@@ -63,7 +63,18 @@ describe "Souffle::Node" do
     lambda { @node.add_child(@child) }.should raise_error
     @child = nil
   end
-  
+
+  it "should be able to iterate across children" do
+    @child1 = Souffle::Node.new
+    @child2 = Souffle::Node.new
+    @node.add_child(@child1)
+    @node.add_child(@child2)
+
+    children = [@child1, @child2]
+    @node.each_child { |child| children.delete(child) }
+    children.should eql([])
+  end
+
   it "should be able to test node equality" do
     @node.dependencies << "role[awesome]"
     @node.run_list << "recipe[the_best]"
