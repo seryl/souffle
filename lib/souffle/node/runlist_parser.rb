@@ -61,9 +61,10 @@ module Souffle
       # 
       # @raise [ InvalidRunlistName ] Runlist Name is invalid.
       def gaurentee_name_is_word(runlist_hash)
-        unless (/\w+/).match(runlist_hash["name"])[0] == runlist_hash["name"]
+        m = /[A-Za-z0-9_:]+/
+        unless m.match(runlist_hash["name"])[0] == runlist_hash["name"]
           raise Souffle::Exceptions::InvalidRunlistName,
-            "Name must be [A-Za-z0-9_]."
+            "Name must be [A-Za-z0-9_:]."
         end
       end
     end
