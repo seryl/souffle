@@ -41,14 +41,12 @@ describe "Souffle::Node" do
     node2 = Souffle::Node.new
     node2.dependencies << "role[dns_server]"
     node2.depends_on?(@node).should eql(true)
-    node2 = nil
   end
 
   it "should not depend on another node when there are no dependencies" do
     @node.run_list << "role[dns_server]"
     node2 = Souffle::Node.new
     node2.depends_on?(@node).should eql(false)
-    node2 = nil
   end
 
   it "should be able to add child nodes" do
@@ -60,7 +58,6 @@ describe "Souffle::Node" do
   it "should raise and error on adding an invalid child" do
     child = []
     lambda { node.add_child(child) }.should raise_error
-    child = nil
   end
 
   it "should be able to iterate across children" do
@@ -77,11 +74,10 @@ describe "Souffle::Node" do
   it "should be able to test node equality" do
     @node.dependencies << "role[awesome]"
     @node.run_list << "recipe[the_best]"
-
+    
     node2 = Souffle::Node.new
     node2.dependencies << "role[awesome]"
     node2.run_list << "recipe[the_best]"
-
     @node.should eql(node2)
   end
 
