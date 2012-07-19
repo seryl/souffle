@@ -9,13 +9,23 @@ describe "Souffle::System" do
     @system = nil
   end
 
-  it "should be able to setup a Vagrant provider" do
+  it "should be able to initialize a Vagrant provider" do
     @system.provider.name.should eql("Vagrant")
+  end
+
+  it "should be able to initialize an AWS provider" do
+    @system = Souffle::System.new("AWS")
+    @system.provider.name.should eql("AWS")
+  end
+
+  it "should be able to setup an Vagrant provider" do
+    @system = Souffle::System.new("Vagrant")
+    @system.setup_provider
   end
 
   it "should be able to setup an AWS provider" do
     @system = Souffle::System.new("AWS")
-    @system.provider.name.should eql("AWS")
+    @system.setup_provider
   end
 
   it "should raise an InvalidProvider error when the provider doesn't exist" do
