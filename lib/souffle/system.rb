@@ -10,7 +10,7 @@ module Souffle
       super() # NOTE: This is here to initialize state_machine.
     end
 
-    # Add the root node.
+    # Adds the root node to the system.
     # 
     # @param [ Souffle::Node ] node The node to become to root node.
     def root=(node)
