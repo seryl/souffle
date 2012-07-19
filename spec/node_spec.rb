@@ -35,4 +35,19 @@ describe "Souffle::Node" do
     @node.run_list << "recipe[chef_server::rubygems_install]"
     @node.run_list << "role[dns_server]"
   end
+
+  it "should be able to test whether or not a node depends on another" do
+    @node.run_list << "role[dns_server]"
+    @node2 = Souffle::Node.new
+    @node2.dependencies << "role[dns_server]"
+    @node2.depends_on?(@node).should eql(true)
+    @node2 = nil
+  end
+
+  it "should not depend on another node when there are no dependencies" do
+    @node.run_list << "role[dns_server]"
+    @node2 = Souffle::Node.new
+    @node2.depends_on?(@node).should eql(false)
+    @node2 = nil
+  end
 end
