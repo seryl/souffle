@@ -29,13 +29,8 @@ module Souffle
     # 
     # @return [ true,false ] Whether or not this node depends on the given.
     def depends_on?(node)
-      depends = false
-      self.dependencies.each do |d|
-        if node.run_list.include? d
-          depends = true
-        end
-      end
-      depends
+      self.dependencies.each { |d| return true if node.run_list.include? d }
+      false
     end
 
     # Adds a child node to the current node.
