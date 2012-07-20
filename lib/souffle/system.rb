@@ -53,5 +53,26 @@ module Souffle
       @nodes << node
     end
 
+    # Returns the list of all nodes including the root nodes.
+    # 
+    # @return [ Array ] The list of all nodes including the root nodes.
+    def nodes_including_root
+      Array(@root) | @nodes
+    end
+
+    # Returns all nodes including the root except the given node.
+    # 
+    # @return [ Array ] All nodes including the root except the given node.
+    def nodes_including_root_except(node)
+      nodes_including_root.select { |n| n != node }
+    end
+
+    # Returns the list of all nodes except the given node.
+    # 
+    # @return [ Array ] The list of all nodes except the given node.
+    def nodes_except(node)
+      @nodes.select { |n| n != node }
+    end
+
   end
 end
