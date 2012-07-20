@@ -19,6 +19,7 @@ module Souffle
     # @param [ String ] provider The provider to use for the given system.
     def initialize(provider="Vagrant")
       initialize_provider(provider)
+      @nodes = []
       super() # NOTE: This is here to initialize state_machine.
     end
 
@@ -49,9 +50,7 @@ module Souffle
         raise Souffle::Exceptions::RootNodeIsNil,
         "Root node cannot be nil and must be declared before adding new nodes."
       end
-      @root.add_child(node)
-      # TODO: Add dependency checking for child nodes.
-      # needs to be intelligent.
+      @nodes << node
     end
 
   end
