@@ -38,7 +38,7 @@ module Souffle
     # @param [ Souffle::Node::RunListItem ] runlist_item
     # 
     # @return [ true,false ] Whether or not the objects are equal.
-    def ==(runlist_item)
+    def eql?(runlist_item)
       self.to_s == runlist_item.to_s
     end
 
