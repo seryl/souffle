@@ -7,7 +7,7 @@ class Souffle::Application::Server < Souffle::Application
   option :config_file,
     :short => "-c CONFIG",
     :long  => "--config CONFIG",
-    :default => "/etc/souffle/worker.rb",
+    :default => "/etc/souffle/souffle.rb",
     :description => "The configuration file to use"
 
   option :log_level,
