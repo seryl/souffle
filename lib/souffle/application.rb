@@ -44,7 +44,7 @@ class Souffle::Application
     rescue Errno::ENOENT => error
       Souffle::Log.warn "*****************************************"
       Souffle::Log.warn "Did not find config file: #{config[:config_file]}"
-      Souffle::Log.warn "Using command line options.")
+      Souffle::Log.warn "Using command line options."
       Souffle::Log.warn "*****************************************"
     end
   end
