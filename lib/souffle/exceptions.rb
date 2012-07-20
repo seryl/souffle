@@ -14,6 +14,8 @@ module Souffle
 
     # Node children must respond to dependencies and run_list.
     class InvalidChild < RuntimeError; end
+    # Node parents must respond to dependencies and run_list.
+    class InvalidParent < RuntimeError; end
 
     # The provider must exist in souffle/providers.
     class InvalidProvider < RuntimeError; end
