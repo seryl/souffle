@@ -32,8 +32,13 @@ describe "Souffle::Node" do
   end
 
   it "should be able to describe a single node" do
-    @node.run_list << "recipe[chef_server::rubygems_install]"
-    @node.run_list << "role[dns_server]"
+    rlist = [
+      "recipe[chef_server::rubygems_install]",
+      "role[dns_server]" ]
+    rlist.each { |rl| @node.run_list << rl }
+    @node.run_list.each do |rl_item|
+      rlist.include?(rl_item.to_s).should eql(true)
+    end
   end
 
   it "should be able to test whether or not a node depends on another" do
