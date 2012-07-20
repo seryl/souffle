@@ -107,9 +107,9 @@ module Souffle
 
     end
 
-    # Returns the list of all nodes including the root nodes.
+    # Returns the list of all nodes including the root node.
     # 
-    # @return [ Array ] The list of all nodes including the root nodes.
+    # @return [ Array ] The list of all nodes including the root node.
     def nodes_including_root
       Array(@root) | @nodes
     end
