@@ -53,6 +53,57 @@ module Souffle
       @nodes << node
     end
 
+    # Checks node dependencies and rebalances them accordingly.
+    # 
+    # If a node has no dependencies, it depends on the root node.
+    # If a node has depdendencies, setup the node's parents.
+    def rebalance_nodes
+      clear_node_heirarchy
+      @nodes.each do |node|
+        if node.dependencies.empty?
+          @root.add_child(node)
+        else
+          setup_node_parents(node)
+        end
+      end
+    end
+
+    # Clears all parents and children from nodes to prepare to rebalancing.
+    def clear_node_heirarchy
+      nodes_including_root.each { |n| n.parents = []; n.children = [] }
+    end
+
+    # Finds all of a nodes parent dependencies and setup the parents.
+    # 
+    # @param [ Souffle::Node ] node The node to check and configure.
+    def setup_node_parents(node)
+      deps = get_node_dependencies_on_system(node)
+      optimal_deps = optimize_node_dependencies(node, deps)
+      optimal_deps.each { |node_dep| node_dep.add_child(node) }
+    end
+
+    # Gets all of the node dependencies on the system.
+    # 
+    # @param [ Souffle::Node ] node The node to retrieve dependencies for.
+    # 
+    # @return [ Array ] The tuple of [ node, dependency_list ] for the node.
+    def get_node_dependencies_on_system(node)
+      node_dependencies = []
+      nodes_including_root_except(node).each do |n|
+        is_dependant, dep_list = node.depends_on?(n)
+        node_dependencies << [n, dep_list] if is_dependant
+      end
+      node_dependencies
+    end
+
+    # Optimizes the node dependencies for the system.
+    # 
+    # @param [ Souffle::Node ] node The node that you want to optimize.
+    # @param [ Array ] dependency_list The dependency tuple for a given node.
+    def optimize_node_dependencies(node, dependency_list)
+
+    end
+
     # Returns the list of all nodes including the root nodes.
     # 
     # @return [ Array ] The list of all nodes including the root nodes.
