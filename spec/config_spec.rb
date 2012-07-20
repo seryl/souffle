@@ -2,9 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "Souffle::Config" do
   after(:each) do
-    Souffle::Config.configure do |config|
-      config.delete(:random_something)
-    end
+    Souffle::Config.configure { |c| c.delete(:random_something) }
     Souffle::Config[:aws_access_key] = ""
     Souffle::Config[:aws_access_secret] = ""
   end
