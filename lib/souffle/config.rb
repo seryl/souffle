@@ -71,5 +71,7 @@ module Souffle
     aws_access_key = ""
     aws_access_secret = ""
 
+    vagrant_dir = "/#{ENV['HOME']}/vagrant/vms"
+
   end
 end

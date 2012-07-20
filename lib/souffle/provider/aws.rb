@@ -2,6 +2,7 @@ require 'souffle/provider'
 
 # The AWS souffle provider.
 class Souffle::Provider::AWS < Souffle::Provider
+  attr_reader :access_key, :access_secret
 
   # Setup the internal AWS configuration and object.
   def setup
