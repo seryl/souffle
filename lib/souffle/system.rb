@@ -50,6 +50,8 @@ module Souffle
         "Root node cannot be nil and must be declared before adding new nodes."
       end
       @root.add_child(node)
+      # TODO: Add dependency checking for child nodes.
+      # needs to be intelligent.
     end
 
   end
