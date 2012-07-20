@@ -42,5 +42,13 @@ module Souffle
       self.to_s == runlist_item.to_s
     end
 
+    # Overriding the default equality comparator to use string representation.
+    # 
+    # @param [ Souffle::Node::RunListItem ] runlist_item
+    # 
+    # @return [ true,false ] Whether or not the objects are equal.
+    def eql?(runlist_item)
+      self.to_s == runlist_item.to_s
+    end
   end
 end

@@ -45,13 +45,15 @@ describe "Souffle::Node" do
     @node.run_list << "role[dns_server]"
     node2 = Souffle::Node.new
     node2.dependencies << "role[dns_server]"
-    node2.depends_on?(@node).should eql(true)
+    node2.depends_on?(@node).should eql(
+      [ true, [Souffle::Node::RunListItem.new("role[dns_server]")] ]
+    )
   end
 
   it "should not depend on another node when there are no dependencies" do
     @node.run_list << "role[dns_server]"
     node2 = Souffle::Node.new
-    node2.depends_on?(@node).should eql(false)
+    node2.depends_on?(@node).should eql([ false, [] ])
   end
 
   it "should be able to add child nodes" do

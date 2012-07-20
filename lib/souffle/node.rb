@@ -8,8 +8,7 @@ require 'souffle/node/runlist'
 module Souffle
   # A node object that's part of a given system.
   class Node
-    attr_accessor :dependencies, :run_list, :parent
-    attr_reader :children
+    attr_accessor :dependencies, :run_list, :parents, :children
 
     state_machine :state, :initial => :uninitialized do
     end
@@ -18,19 +17,33 @@ module Souffle
     def initialize
       @dependencies = Souffle::Node::RunList.new
       @run_list = Souffle::Node::RunList.new
-      @parent = nil
+      @parents = []
       @children = []
       super() # NOTE: This is here to initialize state_machine.
     end
 
     # Check whether or not a given node depends on another node.
     # 
+    # @example
+    # 
+    #   n1 = Souffle::Node.new
+    #   n2 = Souffle::Node.new
+    # 
+    #   n1.run_list     << "role[dns_server]"
+    #   n2.dependencies << "role[dns_server]"
+    #   n2.depends_on?(n1)
+    # 
+    #   > [ true, [role[dns_server]] ]
+    # 
     # @param [ Souffle::Node ] node Check to see whether this node depends
     # 
-    # @return [ true,false ] Whether or not this node depends on the given.
+    # @return [ Array ] The tuple of [depends_on, dependency_list].
     def depends_on?(node)
-      @dependencies.each { |d| return true if node.run_list.include? d }
-      false
+      dependency_list = []
+      @dependencies.each do |d|
+        dependency_list << d if node.run_list.include? d
+      end
+      [dependency_list.any?, dependency_list]
     end
 
     # Adds a child node to the current node.
@@ -43,7 +56,7 @@ module Souffle
         raise Souffle::Exceptions::InvalidChild,
           "Child must act as a Souffle::Node"
       end
-      node.parent = self
+      node.parents << self
       @children.push(node)
     end
 
