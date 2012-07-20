@@ -39,6 +39,19 @@ describe "Souffle::System" do
     @system.root.should eql(node)
   end
 
+  it "should raise an error when added a node with a nil root node" do
+    node = Souffle::Node.new
+    lambda { @system.add(node) }.should raise_error
+  end
+
+  it "should be able to add a child node to the root node" do
+    node  = Souffle::Node.new
+    node2 = Souffle::Node.new
+    @system.root = node
+    lambda { @system.add(node2) }.should_not raise_error
+    @system.root.children.include?(node2).should eql(true)
+  end
+
   it "should have an initial state of `:uninitialized`" do
     @system.state_name.should eql(:uninitialized)
   end
