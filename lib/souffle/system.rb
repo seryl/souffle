@@ -45,6 +45,11 @@ module Souffle
     # 
     # @param [ Souffle::Node ] node The node to add into the tree.
     def add(node)
+      if root.nil?
+        raise Souffle::Exceptions::RootNodeIsNil,
+        "Root node cannot be nil and must be declared before adding new nodes."
+      end
+      @root.add_child(node)
     end
 
   end

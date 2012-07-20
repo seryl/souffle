@@ -17,5 +17,8 @@ module Souffle
 
     # The provider must exist in souffle/providers.
     class InvalidProvider < RuntimeError; end
+
+    # Root node cannot be nil and must be declared before adding new nodes.
+    class RootNodeIsNil < RuntimeError; end
   end
 end
