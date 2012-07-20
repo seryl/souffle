@@ -28,7 +28,7 @@ describe "Souffle::System" do
     @system.setup_provider
   end
 
-  it "should raise an InvalidProvider error when the provider doesn't exist" do
+  it "raises an InvalidProvider error when the provider doesn't exist" do
     d = lambda { @system = Souffle::System.new("UnholyProviderOfBadness") }
     d.should raise_error
   end
