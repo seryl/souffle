@@ -12,10 +12,8 @@ describe "Souffle::Provider::Vagrant" do
 
   it "should have setup initialize the access key and secret" do
     example_vagrant_dir = "/path/so/vagrant"
-
     Souffle::Config[:vagrant_dir] = "/path/so/vagrant"
     @provider.setup
-
     @provider.vagrant_dir.should eql(example_vagrant_dir)
   end
 end
