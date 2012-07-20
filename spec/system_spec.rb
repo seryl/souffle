@@ -92,9 +92,8 @@ describe "Souffle::System" do
 
     @system.get_node_dependencies_on_system(node).should eql(
       [ [node2, [Souffle::Node::RunListItem.new("role[example_role]")] ],
-        [node3, [Souffle::Node::RunListItem.new("recipe[the_best_one]")] ],
-      ]
-    )
+        [node3, [Souffle::Node::RunListItem.new("recipe[the_best_one]")] ]
+      ] )
   end
 
   it "should be able to rebalance a system of nodes"
