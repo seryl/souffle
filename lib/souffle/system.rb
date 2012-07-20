@@ -23,6 +23,9 @@ module Souffle
       super() # NOTE: This is here to initialize state_machine.
     end
 
+    # Sets up the given provider to be used for the creation of the system.
+    # 
+    # @param [ String ] provider The provider to use for system creation.
     def initialize_provider(provider)
       @provider = Souffle::Provider.const_get(provider.to_sym).new
     rescue
