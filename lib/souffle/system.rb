@@ -80,8 +80,7 @@ module Souffle
     # 
     # @param [ Souffle::Node ] node The node to check and configure.
     def setup_node_parents(node)
-      deps = get_node_dependencies_on_system(node)
-      optimal_deps = optimize_node_dependencies(node, deps)
+      optimal_deps = optimize_node_dependencies(node)
       optimal_deps.each { |node_dep| node_dep.add_child(node) }
     end
 
@@ -99,12 +98,11 @@ module Souffle
       node_dependencies
     end
 
-    # Optimizes the node dependencies for the system.
+    # The optimized the node dependencies for the system.
     # 
     # @param [ Souffle::Node ] node The node that you want to optimize.
-    # @param [ Array ] dependency_list The dependency tuple for a given node.
-    def optimize_node_dependencies(node, dependency_list)
-
+    def optimized_node_dependencies(node)
+      deps = get_node_dependencies_on_system(node)
     end
 
     # Returns the list of all nodes including the root node.
