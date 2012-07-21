@@ -80,7 +80,7 @@ module Souffle
     # 
     # @param [ Souffle::Node ] node The node to check and configure.
     def setup_node_parents(node)
-      optimal_deps = optimize_node_dependencies(node)
+      optimal_deps = optimized_node_dependencies(node)
       optimal_deps.each { |node_dep| node_dep.add_child(node) }
     end
 
