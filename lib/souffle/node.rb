@@ -57,8 +57,10 @@ module Souffle
         raise Souffle::Exceptions::InvalidChild,
           "Child must act as a Souffle::Node"
       end
-      node.parents << self
-      @children.push(node)
+      unless @children.include? node
+        node.parents << self
+        @children.push(node)
+      end
     end
 
     # Iterator method for children.

@@ -112,31 +112,35 @@ describe "Souffle::System" do
   end
 
   it "should be able to optimize a rebalanced system of nodes" do
-    node1 = Souffle::Node.new
-    node2 = Souffle::Node.new
-    node3 = Souffle::Node.new
-    node4 = Souffle::Node.new
+    target = Souffle::Node.new
+    heavy1 = Souffle::Node.new
+    heavy2 = Souffle::Node.new
+    root_node = Souffle::Node.new
+    light_node = Souffle::Node.new
 
-    node1.dependencies << "role[example_role]"
-    node1.dependencies << "recipe[the_best_one]"
+    target.dependencies << "role[example_role]"
+    target.dependencies << "recipe[the_best_one]"
 
-    node2.run_list << "role[example_role]"
-    node3.run_list << "recipe[the_best_one]"
+    heavy1.run_list << "role[example_role]"
+    heavy2.run_list << "recipe[the_best_one]"
+    heavy1.dependencies << "recipe[heavy]"
+    heavy2.dependencies << "recipe[heavy]"
 
-    node4.run_list << "role[example_role]"
-    node4.run_list << "recipe[the_best_one]"
+    root_node.run_list << "recipe[heavy]"
 
-    @system.add(node1)
-    @system.add(node2)
-    @system.add(node3)
-    @system.add(node4)
+    light_node.run_list << "role[example_role]"
+    light_node.run_list << "recipe[the_best_one]"
+
+    @system.add(target)
+    @system.add(heavy1)
+    @system.add(heavy2)
+    @system.add(root_node)
+    @system.add(light_node)
 
     @system.rebalance_nodes
 
-    # @system.dependencies_on_system(node1).should eql(
-    #   [ [node2, [Souffle::Node::RunListItem.new("role[example_role]")] ],
-    #     [node3, [Souffle::Node::RunListItem.new("recipe[the_best_one]")] ]
-    #   ] )
+    deps = @system.optimized_node_dependencies(target)
+    deps.should eql([light_node])
   end
 
   it "should have an initial state of `:uninitialized`" do

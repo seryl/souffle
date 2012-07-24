@@ -62,6 +62,13 @@ describe "Souffle::Node" do
     @node.children.should eql([child])
   end
 
+  it "should not duplicate a child node that's added" do
+    child = Souffle::Node.new
+    @node.add_child(child)
+    @node.add_child(child)
+    @node.children.should eql([child])
+  end
+
   it "should raise and error on adding an invalid child" do
     child = []
     lambda { node.add_child(child) }.should raise_error

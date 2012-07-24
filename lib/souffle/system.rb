@@ -1,3 +1,5 @@
+require 'set'
+
 module Souffle
   # A system description with nodes and the statemachine to manage them.
   class System
@@ -64,7 +66,7 @@ module Souffle
     # @param [ Souffle::Node ] node The node to check and configure.
     def setup_node_parents(node)
       optimal_deps = optimized_node_dependencies(node)
-      optimal_deps.each { |node_dep| node_dep.add_child(node) }
+      optimal_deps.each { |n, node_deps| n.add_child(node) }
     end
 
     # Gets all of the node dependencies on the system.
@@ -81,13 +83,28 @@ module Souffle
       node_dependencies
     end
 
+    # Returns a dependency to node list mapping.
+    # 
+    # @return [ Hash ] The mapping of depdencies to nodes.
+    def dependency_mapping(node)
+      mapping = {}
+      dependencies_on_system(node).each do |n, deps|
+        deps.each do |dep|
+          mapping[dep] ||= []; mapping[dep] << n
+        end
+      end
+      mapping
+    end
+
     # The optimized the node dependencies for the system.
     # 
     # @param [ Souffle::Node ] node The node that you want to optimize.
     def optimized_node_dependencies(node)
-      dependencies_on_system(node).inject([]) do |res, d|
-        res << d.first
+      deps = Set.new
+      dependency_mapping(node).each do |dep, nodes|
+        deps << nodes.sort_by { |n| n.weight }.first
       end
+      deps.to_a
     end
 
     # Returns the list of all nodes except the given node.
