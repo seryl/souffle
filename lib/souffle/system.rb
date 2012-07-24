@@ -1,7 +1,7 @@
 module Souffle
   # A system description with nodes and the statemachine to manage them.
   class System
-    attr_reader :nodes, :root, :provider
+    attr_reader :nodes, :provider
 
     state_machine :state, :initial => :uninitialized do
       before_transition :uninitialized => any - :uninitialized,
@@ -38,42 +38,25 @@ module Souffle
       @provider.setup
     end
 
-    # Adds the root node to the system.
-    # 
-    # @param [ Souffle::Node ] node The node to become to root node.
-    def root=(node)
-      @root = node
-    end
-
     # Adds a node to the system tree.
     # 
     # @param [ Souffle::Node ] node The node to add into the tree.
     def add(node)
-      if root.nil?
-        raise Souffle::Exceptions::RootNodeIsNil,
-        "Root node cannot be nil and must be declared before adding new nodes."
-      end
       @nodes << node
     end
 
     # Checks node dependencies and rebalances them accordingly.
     # 
-    # If a node has no dependencies, it depends on the root node.
+    # If a node has no dependencies, it's a root node!
     # If a node has depdendencies, setup the node's parents.
     def rebalance_nodes
       clear_node_heirarchy
-      @nodes.each do |node|
-        if node.dependencies.empty?
-          @root.add_child(node)
-        else
-          setup_node_parents(node)
-        end
-      end
+      dependent_nodes.each { |n| setup_node_parents(n) }
     end
 
     # Clears all parents and children from nodes to prepare to rebalancing.
     def clear_node_heirarchy
-      nodes_including_root.each { |n| n.parents = []; n.children = [] }
+      @nodes.each { |n| n.parents = []; n.children = [] }
     end
 
     # Finds all of a nodes parent dependencies and setup the parents.
@@ -89,9 +72,9 @@ module Souffle
     # @param [ Souffle::Node ] node The node to retrieve dependencies for.
     # 
     # @return [ Array ] The tuple of [ node, dependency_list ] for the node.
-    def get_node_dependencies_on_system(node)
+    def node_dependencies_on_system(node)
       node_dependencies = []
-      nodes_including_root_except(node).each do |n|
+      nodes_except(node).each do |n|
         is_dependant, dep_list = node.depends_on?(n)
         node_dependencies << [n, dep_list] if is_dependant
       end
@@ -102,21 +85,9 @@ module Souffle
     # 
     # @param [ Souffle::Node ] node The node that you want to optimize.
     def optimized_node_dependencies(node)
-      deps = get_node_dependencies_on_system(node)
-    end
-
-    # Returns the list of all nodes including the root node.
-    # 
-    # @return [ Array ] The list of all nodes including the root node.
-    def nodes_including_root
-      Array(@root) | @nodes
-    end
-
-    # Returns all nodes including the root except the given node.
-    # 
-    # @return [ Array ] All nodes including the root except the given node.
-    def nodes_including_root_except(node)
-      nodes_including_root.select { |n| n != node }
+      node_dependencies_on_system(node).inject([]) do |res, d|
+        res << d.first
+      end
     end
 
     # Returns the list of all nodes except the given node.
@@ -124,6 +95,23 @@ module Souffle
     # @return [ Array ] The list of all nodes except the given node.
     def nodes_except(node)
       @nodes.select { |n| n != node }
+    end
+
+    # Returns the list of all root nodes.
+    # 
+    # @note We use dependencies here to validate whether a node is root here
+    # because the parents are only determined after a rebalance is run.
+    # 
+    # @return [ Array ] The list of all root nodes. (Nodes without parents).
+    def roots
+      @nodes.select { |n| n.dependencies.empty? }
+    end
+
+    # Returns the list of all dependent nodes.
+    # 
+    # @return [ Array ] The list of all dependant nodes.
+    def dependent_nodes
+      @nodes.select { |n| n.dependencies.any? }
     end
 
   end

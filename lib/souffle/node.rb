@@ -14,11 +14,12 @@ module Souffle
     end
 
     # Creates a new souffle node with bare dependencies and run_list.
-    def initialize
+    def initialize(parent_multiplier=5)
       @dependencies = Souffle::Node::RunList.new
       @run_list = Souffle::Node::RunList.new
       @parents = []
       @children = []
+      @parent_multiplier = parent_multiplier
       super() # NOTE: This is here to initialize state_machine.
     end
 
@@ -72,6 +73,13 @@ module Souffle
     # @param [ Souffle::Node ] other The node to compare against.
     def eql?(other)
       @dependencies == other.dependencies && @run_list == other.run_list
+    end
+
+    # The dependency weight of a given node.
+    # 
+    # @return [ Integer ] The relative weight of a node used for balancing.
+    def weight
+      @parents.inject(1) { |res, p| res + p.weight * @parent_multiplier }
     end
 
   end

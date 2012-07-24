@@ -88,6 +88,16 @@ describe "Souffle::Node" do
     @node.should eql(node2)
   end
 
+  it "should have a depency weight of 1 with no parents" do
+    @node.weight.should eql(1)
+  end
+
+  it "should have a dependency weight of at least 2 with a parent" do
+    parent = Souffle::Node.new
+    parent.add_child(@node)
+    (@node.weight >= 2).should eql(true)
+  end
+
   it "should have an initial state of `:uninitialized`" do
     @node.state_name.should eql(:uninitialized)
   end

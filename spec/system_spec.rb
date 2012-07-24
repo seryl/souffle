@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require 'set'
 
 describe "Souffle::System" do
   before(:each) do
@@ -33,70 +34,110 @@ describe "Souffle::System" do
     d.should raise_error
   end
 
+  it "should be able to find all of the nodes with no parents" do
+    node1 = Souffle::Node.new
+    node2 = Souffle::Node.new
+    node3 = Souffle::Node.new
+    node4 = Souffle::Node.new
+
+    node1.dependencies << "role[awesomeone]"
+    node2.dependencies << "recipe[bleh]"
+
+    @system.add(node1)
+    @system.add(node2)
+    @system.add(node3)
+    @system.add(node4)
+
+    @system.roots.to_set.should eql(Set.new([node3, node4]))
+  end
+
   it "should be able to add a root node" do
     node = Souffle::Node.new
-    @system.root = node
-    @system.root.should eql(node)
+    @system.add(node)
+    @system.roots.should eql([node])
   end
 
-  it "should raise an error when added a node with a nil root node" do
-    node = Souffle::Node.new
-    lambda { @system.add(node) }.should raise_error
-  end
-
-  it "should be able to add a child node to the root node" do
-    node  = Souffle::Node.new
+  it "should be able to determine dependant nodes" do
+    node1 = Souffle::Node.new
     node2 = Souffle::Node.new
-    @system.root = node
-    lambda do
-      @system.add(node2)
-      @system.rebalance_nodes
-    end.should_not raise_error
-    @system.root.children.include?(node2).should eql(true)
+
+    node1.run_list     << "role[some_silly_role]"
+    node2.dependencies << "role[some_silly_role]"
+
+    @system.add(node1)
+    @system.add(node2)
+
+    lambda { @system.rebalance_nodes }.should_not raise_error
+    @system.dependent_nodes.should eql([node2])
   end
 
   it "should be able to clear all nodes parent and child heirarchy" do
-    node  = Souffle::Node.new
+    node1  = Souffle::Node.new
     node2 = Souffle::Node.new
-    @system.root = node
-    @system.root.add_child(node2)
+
+    node1.run_list     << "role[some_silly_role]"
+    node2.dependencies << "role[some_silly_role]"
+
+    @system.add(node1)
     @system.add(node2)
+    @system.rebalance_nodes
 
-    root_node  = @system.root
-    child_node = @system.nodes.first
+    node1.children.include?(node2).should eql(true)
+    node2.parents.include?(node1).should eql(true)
 
-    root_node.children.include?(child_node).should eql(true)
-    child_node.parents.include?(root_node).should eql(true)
     @system.clear_node_heirarchy
-    root_node.children.should eql([])
-    child_node.parents.should eql([])
+    node1.children.should eql([])
+    node2.parents.should eql([])
   end
 
   it "should be able to get the node dependencies on a system" do
-    root_node = Souffle::Node.new
-
-    node  = Souffle::Node.new
+    node1  = Souffle::Node.new
     node2 = Souffle::Node.new
     node3 = Souffle::Node.new
 
-    node.dependencies << "role[example_role]"
-    node.dependencies << "recipe[the_best_one]"
+    node1.dependencies << "role[example_role]"
+    node1.dependencies << "recipe[the_best_one]"
 
     node2.run_list << "role[example_role]"
     node3.run_list << "recipe[the_best_one]"
 
-    @system.root = root_node
-    @system.add(node)
+    @system.add(node1)
     @system.add(node2)
     @system.add(node3)
 
-    @system.get_node_dependencies_on_system(node).should eql(
+    @system.node_dependencies_on_system(node1).should eql(
       [ [node2, [Souffle::Node::RunListItem.new("role[example_role]")] ],
         [node3, [Souffle::Node::RunListItem.new("recipe[the_best_one]")] ]
       ] )
   end
 
-  it "should be able to rebalance a system of nodes"
+  it "should be able to optimize a rebalanced system of nodes" do
+    node1 = Souffle::Node.new
+    node2 = Souffle::Node.new
+    node3 = Souffle::Node.new
+    node4 = Souffle::Node.new
+
+    node1.dependencies << "role[example_role]"
+    node1.dependencies << "recipe[the_best_one]"
+
+    node2.run_list << "role[example_role]"
+    node3.run_list << "recipe[the_best_one]"
+
+    node4.run_list << "role[example_role]"
+    node4.run_list << "recipe[the_best_one]"
+
+    @system.add(node1)
+    @system.add(node2)
+    @system.add(node3)
+    @system.add(node4)
+
+    @system.rebalance_nodes
+
+    # @system.node_dependencies_on_system(node1).should eql(
+    #   [ [node2, [Souffle::Node::RunListItem.new("role[example_role]")] ],
+    #     [node3, [Souffle::Node::RunListItem.new("recipe[the_best_one]")] ]
+    #   ] )
+  end
 
   it "should have an initial state of `:uninitialized`" do
     @system.state_name.should eql(:uninitialized)
