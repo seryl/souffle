@@ -42,9 +42,10 @@ class Souffle::Application
     begin
       ::File.open(config[:config_file]) { |f| apply_config(f.path) }
     rescue Errno::ENOENT => error
+      msg =  "Did not find the config file: #{config[:config_file]}"
+      msg << ", Using command line options."
       Souffle::Log.warn "*****************************************"
-      Souffle::Log.warn "Did not find config file: #{config[:config_file]}"
-      Souffle::Log.warn "Using command line options."
+      Souffle::Log.warn msg
       Souffle::Log.warn "*****************************************"
     end
   end

@@ -39,8 +39,18 @@ class Souffle::Application::Server < Souffle::Application
     :proc => lambda { |v| puts "Souffle: #{::Souffle::VERSION}"},
     :exit => 0
 
+  # Grabs all of the cli parameters and generates the mixlib config object.
   def initialize
     super
+  end
 
+  # Configures the souffle server based on the cli parameters.
+  def setup_application
+    @app = Souffle::Server.new
+  end
+
+  # Runs the Souffle Server.
+  def run_application
+    @app.run
   end
 end
