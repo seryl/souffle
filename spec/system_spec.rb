@@ -105,7 +105,7 @@ describe "Souffle::System" do
     @system.add(node2)
     @system.add(node3)
 
-    @system.node_dependencies_on_system(node1).should eql(
+    @system.dependencies_on_system(node1).should eql(
       [ [node2, [Souffle::Node::RunListItem.new("role[example_role]")] ],
         [node3, [Souffle::Node::RunListItem.new("recipe[the_best_one]")] ]
       ] )
@@ -133,7 +133,7 @@ describe "Souffle::System" do
 
     @system.rebalance_nodes
 
-    # @system.node_dependencies_on_system(node1).should eql(
+    # @system.dependencies_on_system(node1).should eql(
     #   [ [node2, [Souffle::Node::RunListItem.new("role[example_role]")] ],
     #     [node3, [Souffle::Node::RunListItem.new("recipe[the_best_one]")] ]
     #   ] )

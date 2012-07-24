@@ -72,7 +72,7 @@ module Souffle
     # @param [ Souffle::Node ] node The node to retrieve dependencies for.
     # 
     # @return [ Array ] The tuple of [ node, dependency_list ] for the node.
-    def node_dependencies_on_system(node)
+    def dependencies_on_system(node)
       node_dependencies = []
       nodes_except(node).each do |n|
         is_dependant, dep_list = node.depends_on?(n)
@@ -85,7 +85,7 @@ module Souffle
     # 
     # @param [ Souffle::Node ] node The node that you want to optimize.
     def optimized_node_dependencies(node)
-      node_dependencies_on_system(node).inject([]) do |res, d|
+      dependencies_on_system(node).inject([]) do |res, d|
         res << d.first
       end
     end
