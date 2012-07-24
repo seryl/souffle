@@ -67,7 +67,7 @@ describe "Souffle::System" do
     @system.add(node1)
     @system.add(node2)
 
-    lambda { @system.rebalance_nodes }.should_not raise_error
+    @system.rebalance_nodes
     @system.dependent_nodes.should eql([node2])
   end
 
