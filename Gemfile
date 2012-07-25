@@ -9,6 +9,7 @@ gem "amqp", "~> 0.9.7"
 gem "state_machine", "~> 1.1.2"
 
 gem "right_aws", "~> 3.0.4"
+gem "tilt", "~> 1.3.3"
 
 gem "mixlib-cli"
 gem "mixlib-config", ">= 1.1.0"
@@ -25,5 +26,6 @@ group :development do
   gem "bundler", "~> 1.1.0"
   gem "jeweler", "~> 1.8.3"
   gem "ruby-graphviz", :require => "graphviz"
+  gem "fakefs", "~> 0.4.0"
   gem (RUBY_VERSION =~ /^1\.9/ ? "simplecov" : "rcov"), ">= 0"
 end
