@@ -11,9 +11,18 @@ module Souffle
     attr_accessor :dependencies, :run_list, :parents, :children
 
     state_machine :state, :initial => :uninitialized do
+      event :init do
+        transition [:uninitialized, :third_failure] => :initializing
+      end
+
+      event :boot do
+        transition [:initializing] => :ready
+      end
     end
 
     # Creates a new souffle node with bare dependencies and run_list.
+    # 
+    # @param [ Integer ] parent_multiplier The multiplier for parent nodes.
     def initialize(parent_multiplier=5)
       @dependencies = Souffle::Node::RunList.new
       @run_list = Souffle::Node::RunList.new
