@@ -14,6 +14,11 @@ describe "Souffle::System" do
     @system.provider.name.should eql("Vagrant")
   end
 
+  it "should be raise an error on an invalid provider" do
+    d = lambda { Souffle::System.new("CompletelyInvalidProvider") }
+    d.should raise_error
+  end
+
   it "should be able to initialize an AWS provider" do
     @system = Souffle::System.new("AWS")
     @system.provider.name.should eql("AWS")
