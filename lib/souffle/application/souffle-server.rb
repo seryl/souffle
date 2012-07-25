@@ -17,10 +17,28 @@ class Souffle::Application::Server < Souffle::Application
     :proc => lambda { |l| l.to_sym }
 
   option :log_location,
-    :short        => "-L LOGLOCATION",
-    :long         => "--logfile LOGLOCATION",
-    :description  => "Set the log file location, defaults to STDOUT",
-    :proc         => nil
+    :short => "-L LOGLOCATION",
+    :long =>  "--logfile LOGLOCATION",
+    :description => "Set the log file location, defaults to STDOUT",
+    :proc => nil
+
+  option :provider,
+    :short => "-p PROVIDER",
+    :long  => "--provider PROVIDER",
+    :default => nil,
+    :description => "The provider to use (overrides config)"
+
+  option :daemonize,
+    :short => "-d",
+    :long  => "--daemon",
+    :default => false,
+    :description => "Run the application as a daemon (forces `-s`)"
+
+  option :server,
+    :short => "-s",
+    :long  => "--server",
+    :default => false,
+    :description => "Start the application as a server"
 
   option :help,
     :short => "-h",
