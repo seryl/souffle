@@ -1,4 +1,5 @@
 require 'souffle/provider'
+require 'right_aws'
 
 # The AWS souffle provider.
 class Souffle::Provider::AWS < Souffle::Provider
@@ -8,6 +9,7 @@ class Souffle::Provider::AWS < Souffle::Provider
   def setup
     @access_key    = Souffle::Config[:aws_access_key]
     @access_secret = Souffle::Config[:aws_access_secret]
+    # @ec2 = RightAws::Ec2.new(@access_key, @access_secret)
   end
   
   # The name of the given provider.

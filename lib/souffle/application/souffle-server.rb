@@ -64,7 +64,7 @@ class Souffle::Application::Server < Souffle::Application
 
   # Configures the souffle server based on the cli parameters.
   def setup_application
-    @app = Souffle::Server.new
+    @app = Souffle::Server.new(config[:server])
   end
 
   # Runs the Souffle Server.

@@ -15,6 +15,10 @@ gem "mixlib-cli"
 gem "mixlib-config", ">= 1.1.0"
 gem "mixlib-log", ">= 1.3.0"
 
+gem "thin"
+gem "rack"
+gem "sinatra"
+
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 group :development do
