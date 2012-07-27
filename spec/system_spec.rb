@@ -145,8 +145,4 @@ describe "Souffle::System" do
     @system.rebalance_nodes
     @system.optimized_node_dependencies(target).should eql([light_node])
   end
-
-  it "should have an initial state of `:uninitialized`" do
-    @system.state_name.should eql(:uninitialized)
-  end
 end
