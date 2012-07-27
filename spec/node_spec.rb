@@ -104,8 +104,4 @@ describe "Souffle::Node" do
     parent.add_child(@node)
     (@node.weight >= 2).should eql(true)
   end
-
-  it "should have an initial state of `:uninitialized`" do
-    @node.state_name.should eql(:uninitialized)
-  end
 end
