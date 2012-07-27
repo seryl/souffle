@@ -22,4 +22,31 @@ describe "Souffle::Provider::AWS" do
     @provider.access_key.should eql(junk_access_key)
     @provider.access_secret.should eql(junk_access_secret)
   end
+
+  it "should be able to see whether the configuration has vpc setup" do
+    aws_vpc_id = "vpc-124ae13"
+    aws_subnet_id = "subnet-24f6a87f"
+
+    Souffle::Config[:aws_vpc_id] = aws_vpc_id
+    Souffle::Config[:aws_subnet_id] = aws_subnet_id
+
+    @provider.use_vpc?.should eql(true)
+  end
+
+  it "should not use vpc when the keys are missing" do
+    aws_vpc_id = "vpc-124ae13"
+    aws_subnet_id = "subnet-24f6a87f"
+
+    Souffle::Config[:aws_vpc_id] = aws_vpc_id
+    Souffle::Config[:aws_subnet_id] = nil
+    @provider.use_vpc?.should eql(false)
+
+    Souffle::Config[:aws_vpc_id] = nil
+    Souffle::Config[:aws_subnet_id] = aws_subnet_id
+    @provider.use_vpc?.should eql(false)
+
+    Souffle::Config[:aws_vpc_id] = nil
+    Souffle::Config[:aws_subnet_id] = nil
+    @provider.use_vpc?.should eql(false)
+  end
 end

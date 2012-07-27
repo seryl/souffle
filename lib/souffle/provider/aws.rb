@@ -17,5 +17,14 @@ class Souffle::Provider::AWS < Souffle::Provider
 
   # Creates a raid array with the given requirements.
   def create_raid
+    # @ec2.
+  end
+
+  # Whether or not to use a vpc instance and subnet for provisioning.
+  # 
+  # @return [ true,false ] Whether to use a vpc instance and specific subnet.
+  def use_vpc?
+    !!Souffle::Config[:aws_vpc_id] and
+    !!Souffle::Config[:aws_subnet_id]
   end
 end
