@@ -17,6 +17,16 @@ describe "Souffle::Provider" do
     lambda { @provider.name }.should raise_error
   end
 
+  it "should raise errors on non-overridden create_system" do
+    n = Souffle::Node.new
+    lambda { @provider.create_system(n) }.should raise_error
+  end
+
+  it "should raise errors on non-overridden create_node" do
+    n = Souffle::Node.new
+    lambda { @provider.create_node(n) }.should raise_error
+  end
+
   it "should raise errors on non-overridden create_raid" do
     lambda { @provider.create_raid }.should raise_error
   end
