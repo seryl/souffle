@@ -15,6 +15,18 @@ class Souffle::Provider::AWS < Souffle::Provider
   # The name of the given provider.
   def name; "AWS"; end
 
+  # Creates a system using aws as the provider.
+  # 
+  # @param [ Souffle::System ] system The system to instantiate.
+  def create_system(system)
+  end
+
+  # Takes a node definition and begins the provisioning process.
+  # 
+  # @param [ Souffle::Node ] node The node to instantiate.
+  def create_node(node)
+  end
+
   # Creates a raid array with the given requirements.
   def create_raid
     # @ec2.

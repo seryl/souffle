@@ -16,6 +16,19 @@ class Souffle::Provider::Vagrant < Souffle::Provider
   # The name of the given provider.
   def name; "Vagrant"; end
 
+  # Creates a system using vagrant as the provider.
+  # 
+  # @param [ Souffle::System ] system The system to instantiate.
+  def create_system(system)
+    
+  end
+
+  # Takes a node definition and begins the provisioning process.
+  # 
+  # @param [ Souffle::Node ] node The node to instantiate.
+  def create_node(node)
+  end
+
   # Noop.
   def create_raid; end
 
@@ -30,7 +43,7 @@ class Souffle::Provider::Vagrant < Souffle::Provider
 
   end
 
-  # Generates the multi-vm configuration file.
+  # Generates the multi-vm configuration.
   def generate_vagrant_config
     template = Souffle::Template.new('Vagrantfile.erb')
     temp_binding = OpenStruct.new
