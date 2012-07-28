@@ -70,8 +70,7 @@ describe "Souffle::Node" do
   end
 
   it "should raise and error on adding an invalid child" do
-    child = []
-    lambda { node.add_child(child) }.should raise_error
+    lambda { node.add_child([]) }.should raise_error
   end
 
   it "should be able to iterate across children" do

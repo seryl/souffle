@@ -1,8 +1,11 @@
-class Souffle::Provisioner
+require 'state_machine'
+
+# The system provisioning statemachine.
+class Souffle::Provisioner::System
 
   state_machine :state, :initial => :uninitialized do
     event :init do
-      transition [:uninitialized, :third_failure] => :initializing
+      transition [:uninitialized, :failure] => :provisioning
     end
 
     event :boot do
@@ -13,15 +16,14 @@ class Souffle::Provisioner
       transition [:ready] => :provisioning
     end
 
-    event :fail do
-      transition any => :failure
+    event :failure do
+      transition any => :failed
     end
 
     around_transition do |system, transition, block|
-        start = Time.now
-        block.call
-        system.time_used += Time.now - start
-      end
+      start = Time.now
+      block.call
+      system.time_used += Time.now - start
     end
   end
 

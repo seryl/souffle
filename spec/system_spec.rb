@@ -10,35 +10,6 @@ describe "Souffle::System" do
     @system = nil
   end
 
-  it "should be able to initialize a Vagrant provider" do
-    @system.provider.name.should eql("Vagrant")
-  end
-
-  it "should be raise an error on an invalid provider" do
-    d = lambda { Souffle::System.new("CompletelyInvalidProvider") }
-    d.should raise_error
-  end
-
-  it "should be able to initialize an AWS provider" do
-    @system = Souffle::System.new("AWS")
-    @system.provider.name.should eql("AWS")
-  end
-
-  it "should be able to setup an Vagrant provider" do
-    @system = Souffle::System.new("Vagrant")
-    @system.setup_provider
-  end
-
-  it "should be able to setup an AWS provider" do
-    @system = Souffle::System.new("AWS")
-    @system.setup_provider
-  end
-
-  it "raises an InvalidProvider error when the provider doesn't exist" do
-    d = lambda { @system = Souffle::System.new("UnholyProviderOfBadness") }
-    d.should raise_error
-  end
-
   it "should be able to find all of the nodes with no parents" do
     node1 = Souffle::Node.new
     node2 = Souffle::Node.new

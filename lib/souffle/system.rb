@@ -2,29 +2,11 @@ require 'set'
 
 # A system description with nodes and the statemachine to manage them.
 class Souffle::System
-  attr_reader :nodes, :provider
+  attr_reader :nodes
 
-  # Creates a new souffle system, defaulting to using Vagrant as a provider.
-  # 
-  # @param [ String ] provider The provider to use for the given system.
-  def initialize(provider="Vagrant")
-    initialize_provider(provider)
+  # Creates a new souffle system.
+  def initialize
     @nodes = []
-  end
-
-  # Sets up the given provider to be used for the creation of the system.
-  # 
-  # @param [ String ] provider The provider to use for system creation.
-  def initialize_provider(provider)
-    @provider = Souffle::Provider.const_get(provider.to_sym).new
-  rescue
-    raise Souffle::Exceptions::InvalidProvider,
-      "The provider Souffle::Provider::#{provider} does not exist."
-  end
-
-  # Proxy to the provider setup routine.
-  def setup_provider
-    @provider.setup
   end
 
   # Adds a node to the system tree.
