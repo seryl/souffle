@@ -4,21 +4,7 @@ require 'state_machine'
 class Souffle::Provisioner::System
 
   state_machine :state, :initial => :uninitialized do
-    event :init do
-      transition [:uninitialized, :failure] => :provisioning
-    end
-
-    event :boot do
-      transition [:initializing] => :ready
-    end
-
-    event :provision do
-      transition [:ready] => :provisioning
-    end
-
-    event :failure do
-      transition any => :failed
-    end
+    after_transition any => :initializing, :do => :create
 
     around_transition do |system, transition, block|
       start = Time.now
@@ -27,7 +13,20 @@ class Souffle::Provisioner::System
     end
   end
 
-  def initialize
+  def initialize(system, max_failures=3)
     super() # NOTE: This is here to initialize state_machine.
+  end
+
+  # Creates the system from an api or command.
+  def create
+    Souffle::Log.info "Creating a new system"
+  end
+
+  # Kills the system entirely.
+  def kill
+  end
+
+  # Kills the system and restarts the creation loop.
+  def kill_and_recreate
   end
 end

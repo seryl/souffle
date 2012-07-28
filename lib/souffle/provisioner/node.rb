@@ -36,23 +36,28 @@ class Souffle::Provisioner::Node
     super() # NOTE: This is here to initialize state_machine.
   end
 
-  # Creates the machine from an api or command.
+  # Creates the node from an api or command.
   def create
+    Souffle::Log.info "Creating a new node"
   end
 
-  # Boots up the machine and waits for ssh.
+  # Boots up the node and waits for ssh.
   def boot
+    Souffle::Log.info "Booting node"
   end
 
   # Provisions the ebs/raid/shares/etc and then starts the chef run.
   def provision
+    Souffle::Log.info "Provisioning node"
   end
 
   # Kills the node entirely.
   def kill
+    Souffle::Log.info "Killing node"
   end
 
   # Kills the node and restarts the creation loop.
   def kill_and_recreate
+    Souffle::Log.info "Recreating node"
   end
 end
