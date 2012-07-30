@@ -10,6 +10,7 @@ end
 require 'souffle/log'
 require 'souffle/exceptions'
 require 'souffle/config'
+require 'souffle/daemon'
 require 'souffle/providers'
 require 'souffle/node'
 require 'souffle/system'

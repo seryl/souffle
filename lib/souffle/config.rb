@@ -63,15 +63,26 @@ class Souffle::Config
     end
   end
 
+  # Logging Settings
   log_level :info
   log_location STDOUT
 
+  # Daemonization Settings
+  user nil
+  group nil
+  umask 0022
+
+  pid_file nil
+
+  # AWS Settings
   aws_access_key ""
   aws_access_secret ""
 
+  # Rack Settings
   rack_host "0.0.0.0"
   rack_port 8080
   rack_environment "development"
 
+  # Vagrant Settings
   vagrant_dir "#{ENV['HOME']}/vagrant/vms"
 end

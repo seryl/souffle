@@ -6,15 +6,12 @@ require 'souffle/http'
 class Souffle::Server
 
   # Creates a new souffle server.
-  # 
-  # @param [ true,false ] serve_forever 
-  def initialize(serve_forever=false)
-    @serve_forever = serve_forever
+  def initialize
   end
 
   # Runs the server.
   def run
-    if @serve_forever
+    if Souffle::Config[:server]
       EM.run do
         @app = Rack::Builder.new do
           use Rack::Lint
@@ -35,7 +32,7 @@ class Souffle::Server
     Souffle::Config.configuration.each do |k,v|
       if /^rack/ =~ k.to_s
         param = k.to_s.gsub('rack_', '')
-        
+
         case param
         when "environment"
           opts[param.to_sym] = v
