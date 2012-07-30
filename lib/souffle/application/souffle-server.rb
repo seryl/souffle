@@ -17,10 +17,25 @@ class Souffle::Application::Server < Souffle::Application
     :proc => lambda { |l| l.to_sym }
 
   option :log_location,
-    :short => "-L LOGLOCATION",
-    :long =>  "--logfile LOGLOCATION",
+    :short => "-L LOG_LOCATION",
+    :long =>  "--logfile LOG_LOCATION",
     :description => "Set the log file location, defaults to STDOUT",
     :proc => nil
+
+  option :rack_host,
+    :short => "-H HOSTNAME",
+    :long  => "--hostname HOSTNAME",
+    :description => "Hostname to listen on (default: 0.0.0.0)"
+
+  option :rack_port,
+    :short => "-P PORT",
+    :long  => "--port PORT",
+    :description => "Port to listen on (default: 8080)"
+
+  option :rack_host,
+    :short => "-V VAGRANT_DIR",
+    :long  => "--vagrant_dir VAGRANT_DIR",
+    :description => "The path to the base vagrant vm directory"
 
   option :provider,
     :short => "-p PROVIDER",
