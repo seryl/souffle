@@ -66,8 +66,11 @@ class Souffle::Config
   log_level :info
   log_location STDOUT
 
-  aws_access_key = ""
-  aws_access_secret = ""
+  aws_access_key ""
+  aws_access_secret ""
 
-  vagrant_dir = "/#{ENV['HOME']}/vagrant/vms"
+  rack_host "0.0.0.0"
+  rack_port 8080
+
+  vagrant_dir "#{ENV['HOME']}/vagrant/vms"
 end

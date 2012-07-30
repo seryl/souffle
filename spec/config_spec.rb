@@ -7,6 +7,19 @@ describe "Souffle::Config" do
     Souffle::Config[:aws_access_secret] = ""
   end
 
+  it "should have default values for aws, rack and vagrant" do
+    %w{ aws_access_key aws_access_secret
+      rack_host rack_port vagrant_dir }.each do |cfg|
+        cfg = cfg.to_sym
+        Souffle::Config.configuration.keys.include?(cfg).should eql(true)
+      end
+  end
+
+  it "should have a proper default vagrant directory" do
+    vagrant_dir = "#{ENV['HOME']}/vagrant/vms"
+    Souffle::Config[:vagrant_dir].should eql(vagrant_dir)
+  end
+
   it "should be able to read from a ruby config file" do
     config = File.join(File.dirname(__FILE__), 'config', 'example.rb')
     Souffle::Config.from_file(config)
