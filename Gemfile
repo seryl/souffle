@@ -15,9 +15,9 @@ gem "mixlib-cli"
 gem "mixlib-config", ">= 1.1.0"
 gem "mixlib-log", ">= 1.3.0"
 
-gem "puma"
-gem "rack"
-gem "sinatra"
+gem "puma", "~> 1.5.0"
+gem "rack", "~> 1.4.1"
+gem "sinatra", "~> 1.3.2"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
