@@ -9,7 +9,7 @@ describe "Souffle::Config" do
 
   it "should have default values for aws, rack and vagrant" do
     %w{ aws_access_key aws_access_secret
-      rack_host rack_port vagrant_dir }.each do |cfg|
+      rack_host rack_port rack_environment vagrant_dir }.each do |cfg|
         cfg = cfg.to_sym
         Souffle::Config.configuration.keys.include?(cfg).should eql(true)
       end

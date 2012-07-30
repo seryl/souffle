@@ -71,6 +71,7 @@ class Souffle::Config
 
   rack_host "0.0.0.0"
   rack_port 8080
+  rack_environment "development"
 
   vagrant_dir "#{ENV['HOME']}/vagrant/vms"
 end

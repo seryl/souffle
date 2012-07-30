@@ -34,7 +34,14 @@ class Souffle::Server
     opts = Hash.new
     Souffle::Config.configuration.each do |k,v|
       if /^rack/ =~ k.to_s
-        opts[k.to_s.gsub('rack_', '').capitalize.to_sym] = v
+        param = k.to_s.gsub('rack_', '')
+        
+        case param
+        when "environment"
+          opts[param.to_sym] = v
+        else
+          opts[param.capitalize.to_sym] = v
+        end
       end
     end
     opts

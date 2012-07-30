@@ -40,7 +40,6 @@ class Souffle::Application::Server < Souffle::Application
   option :provider,
     :short => "-p PROVIDER",
     :long  => "--provider PROVIDER",
-    :default => nil,
     :description => "The provider to use (overrides config)"
 
   option :daemonize,
@@ -48,6 +47,11 @@ class Souffle::Application::Server < Souffle::Application
     :long  => "--daemon",
     :default => false,
     :description => "Run the application as a daemon (forces `-s`)"
+
+  option :environment,
+    :short => "-e",
+    :long  => "--environment",
+    :description => "The environment profile to use"
 
   option :server,
     :short => "-s",
