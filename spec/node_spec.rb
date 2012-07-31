@@ -103,4 +103,9 @@ describe "Souffle::Node" do
     parent.add_child(@node)
     (@node.weight >= 2).should eql(true)
   end
+
+  it "should have a name and be able to set it" do
+    @node.name = "AwesomeName"
+    @node.name.should eql("AwesomeName")
+  end
 end
