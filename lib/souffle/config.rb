@@ -67,6 +67,9 @@ class Souffle::Config
   log_level :info
   log_location STDOUT
 
+  # Provider Settings
+  provider "Vagrant"
+
   # Daemonization Settings
   user nil
   group nil

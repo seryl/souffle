@@ -19,17 +19,20 @@ describe "Souffle::Provisioner" do
   end
 
   it "should be able to initialize an AWS provider" do
-    @provisioner = Souffle::Provisioner.new("AWS")
+    Souffle::Config[:provider] = "AWS"
+    @provisioner = Souffle::Provisioner.new
     @provisioner.provider.name.should eql("AWS")
   end
 
   it "should be able to setup an Vagrant provider" do
-    @provisioner = Souffle::Provisioner.new("Vagrant")
+    Souffle::Config[:provider] = "Vagrant"
+    @provisioner = Souffle::Provisioner.new
     @provisioner.setup_provider
   end
 
   it "should be able to setup an AWS provider" do
-    @provisioner = Souffle::Provisioner.new("AWS")
+    Souffle::Config[:provider] = "AWS"
+    @provisioner = Souffle::Provisioner.new
     @provisioner.setup_provider
   end
 
