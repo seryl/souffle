@@ -8,11 +8,23 @@ require 'souffle/provisioner/system'
 
 # Starts up the base provisioner class with system and node state machines.
 class Souffle::Provisioner
-  attr_reader :provider
+  attr_reader :provider, :system
 
   # Creates a new provisioner, defaulting to using Vagrant as a provider.
   def initialize
     @provider = initialize_provider
+  end
+
+  # Creates the system object from a hash and raises an exception on errors.
+  # 
+  # @param [ Hash ] system_hash The system represented in hash format.
+  def setup_system(system_hash)
+    begin
+    @system = Souffle::System.from_hash(system_hash)
+    rescue
+      puts "er"
+      # raise Souffle::Exceptions::
+    end
   end
 
   # Cleans up the provider name to match the providers we have.
@@ -26,6 +38,8 @@ class Souffle::Provisioner
       "AWS"
     when /vagrant/
       "Vagrant"
+    else
+      provider
     end
   end
 

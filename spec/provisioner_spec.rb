@@ -2,6 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "Souffle::Provisioner" do
   before(:each) do
+    Souffle::Config[:provider] = "Vagrant"
     @provisioner = Souffle::Provisioner.new
   end
 
@@ -14,7 +15,8 @@ describe "Souffle::Provisioner" do
   end
 
   it "should be raise an error on an invalid provider" do
-    d = lambda { Souffle::Provisioner.new("CompletelyInvalidProvider") }
+    Souffle::Config[:provider] = "CompletelyInvalidProvider"
+    d = lambda { Souffle::Provisioner.new }
     d.should raise_error
   end
 
@@ -37,11 +39,8 @@ describe "Souffle::Provisioner" do
   end
 
   it "raises an InvalidProvider error when the provider doesn't exist" do
-    d = lambda { Souffle::Provisioner.new("UnholyProviderOfBadness") }
+    Souffle::Config[:provider] = "UnholyProviderOfBadness"
+    d = lambda { Souffle::Provisioner.new }
     d.should raise_error
-  end
-
-  it "should be able to create an entire system from a hash" do
-    
   end
 end

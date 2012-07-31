@@ -32,6 +32,10 @@ class Souffle::Provider::AWS < Souffle::Provider
     # @ec2.
   end
 
+  def create_ebs
+
+  end
+
   # Whether or not to use a vpc instance and subnet for provisioning.
   # 
   # @return [ true,false ] Whether to use a vpc instance and specific subnet.

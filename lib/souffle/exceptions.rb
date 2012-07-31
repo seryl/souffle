@@ -19,5 +19,8 @@ module Souffle
 
     # The provider must exist in souffle/providers.
     class InvalidProvider < RuntimeError; end
+
+    # The system hash must have a nodes key with a list of nodes.
+    class InvalidSystemHash < RuntimeError; end
   end
 end

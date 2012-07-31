@@ -105,6 +105,7 @@ class Souffle::System
     # 
     # @param [ Hash ] system_hash The hash representation of the system.
     def from_hash(system_hash)
+      guarentee_valid_hash(system_hash)
       sys = Souffle::System.new
       system_hash[:nodes].each do |n|
         node = Souffle::Node.new
@@ -114,6 +115,18 @@ class Souffle::System
         sys.add(node)
       end
       sys
+    end
+
+    private
+
+    # Guarentee that the system hash that was passed in is valid.
+    # 
+    # @param [ Hash ] system_hash The hash representation of the system.
+    def guarentee_valid_hash(system_hash)
+      if system_hash.nil? or !system_hash.has_key?(:nodes)
+        raise Souffle::Exceptions::InvalidSystemHash,
+          "The system hash must have a nodes key with a list of nodes."
+      end
     end
   end
 

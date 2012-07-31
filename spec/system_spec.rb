@@ -117,6 +117,11 @@ describe "Souffle::System" do
     @system.optimized_node_dependencies(target).should eql([light_node])
   end
 
+  it "should raise an exception on an incorrect system hash" do
+    sys = {}
+    lambda { Souffle::System.from_hash(sys) }.should raise_error
+  end
+
   it "should be able to generate a system from a hash" do
     sys = {
       :nodes => [
