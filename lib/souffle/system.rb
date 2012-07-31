@@ -99,4 +99,22 @@ class Souffle::System
   def dependent_nodes
     @nodes.select { |n| n.dependencies.any? }
   end
+
+  class << self
+    # Creates a new system from a given hash.
+    # 
+    # @param [ Hash ] system_hash The hash representation of the system.
+    def from_hash(system_hash)
+      sys = Souffle::System.new
+      system_hash[:nodes].each do |n|
+        node = Souffle::Node.new
+        node.name = n[:name]
+        n[:run_list].each { |rl| node.run_list << rl }
+        n[:dependencies].each { |dep| node.dependencies << dep }
+        sys.add(node)
+      end
+      sys
+    end
+  end
+
 end

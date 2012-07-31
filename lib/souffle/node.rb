@@ -8,7 +8,7 @@ require 'souffle/node/runlist'
 
 # A node object that's part of a given system.
 class Souffle::Node
-  attr_accessor :dependencies, :run_list, :parents, :children
+  attr_accessor :dependencies, :run_list, :parents, :children, :name
 
   # Creates a new souffle node with bare dependencies and run_list.
   # 

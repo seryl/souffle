@@ -116,4 +116,28 @@ describe "Souffle::System" do
     @system.rebalance_nodes
     @system.optimized_node_dependencies(target).should eql([light_node])
   end
+
+  it "should be able to generate a system from a hash" do
+    sys = {
+      :nodes => [
+        { :name => "parent_node",
+          :run_list => ["role[somerole]"],
+          :dependencies => [] },
+        { :name => "lone_node",
+          :run_list => ["role[bestone]"],
+          :dependencies => [] },
+        { :name => "child_node",
+          :run_list => ["recipe[base]"],
+          :dependencies => ["role[somerole]"] }
+      ]
+    }
+
+    new_sys = Souffle::System.from_hash(sys)
+    new_sys.rebalance_nodes
+
+    parent = new_sys.nodes.select { |n| n.name == "parent_node" }.first
+    parent.children.first.name.should eql("child_node")
+    new_sys.roots.size.should eql(2)
+    new_sys.dependent_nodes.size.should eql(1)
+  end
 end

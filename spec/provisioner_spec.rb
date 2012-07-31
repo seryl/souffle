@@ -40,4 +40,8 @@ describe "Souffle::Provisioner" do
     d = lambda { Souffle::Provisioner.new("UnholyProviderOfBadness") }
     d.should raise_error
   end
+
+  it "should be able to create an entire system from a hash" do
+    
+  end
 end
