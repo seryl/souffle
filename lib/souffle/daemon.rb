@@ -1,5 +1,6 @@
 require 'etc'
 
+# Daemon helper routines.
 class Souffle::Daemon
   class << self
     attr_accessor :name

@@ -125,7 +125,6 @@ class Souffle::Application::Server < Souffle::Application
       Souffle::Config[:server] = true
       Souffle::Daemon.daemonize("souffle")
     end
-
     @app.run
   end
 end
