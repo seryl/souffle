@@ -15,16 +15,11 @@ class Souffle::Provisioner
     @provider = initialize_provider
   end
 
-  # Creates the system object from a hash and raises an exception on errors.
+  # Creates the system object from a hash.
   # 
   # @param [ Hash ] system_hash The system represented in hash format.
   def setup_system(system_hash)
-    begin
     @system = Souffle::System.from_hash(system_hash)
-    rescue
-      puts "er"
-      # raise Souffle::Exceptions::
-    end
   end
 
   # Cleans up the provider name to match the providers we have.

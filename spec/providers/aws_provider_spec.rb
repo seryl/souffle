@@ -7,21 +7,11 @@ describe "Souffle::Provider::AWS" do
 
   after(:each) do
     @provider = nil
-    Souffle::Config[:aws_access_key]    = ""
-    Souffle::Config[:aws_access_secret] = ""
   end
 
-  it "should have setup initialize the access key and secret" do
-    junk_access_key    = "4BFAE13E2AC67BDA4B68"
-    junk_access_secret = "WN3bjhS0rZu/L9+VKJd9ag/Smi8nA6/X2NkkihX+"
-
-    Souffle::Config[:aws_access_key]    = junk_access_key
-    Souffle::Config[:aws_access_secret] = junk_access_secret
-    @provider.setup
-
-    @provider.access_key.should eql(junk_access_key)
-    @provider.access_secret.should eql(junk_access_secret)
-  end
+  # Note:
+  #   All of the AWS routines will only run if you are provided a
+  #   valid aws_access_key and aws_access_secret.
 
   it "should be able to see whether the configuration has vpc setup" do
     aws_vpc_id = "vpc-124ae13"
