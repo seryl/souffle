@@ -15,6 +15,7 @@ class Souffle::System
   # 
   # @param [ Souffle::Node ] node The node to add into the tree.
   def add(node)
+    node.system = self
     @nodes << node
   end
 
