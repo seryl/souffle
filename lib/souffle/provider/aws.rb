@@ -59,7 +59,7 @@ class Souffle::Provider::AWS < Souffle::Provider
     !!Souffle::Config[:aws_subnet_id]
   end
 
-  # Checks whether or not the vpc has the vpc and subnet setup proeprly.
+  # Checks whether or not the vpc and subnet are setup proeprly.
   # 
   # @return [ true,false ] Whether or not the vpc is setup.
   def vpc_setup?
