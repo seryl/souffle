@@ -3,10 +3,12 @@ require 'set'
 # A system description with nodes and the statemachine to manage them.
 class Souffle::System
   attr_reader :nodes
+  attr_accessor :options
 
   # Creates a new souffle system.
   def initialize
     @nodes = []
+    @options = {}
   end
 
   # Adds a node to the system tree.
@@ -106,13 +108,17 @@ class Souffle::System
     # @param [ Hash ] system_hash The hash representation of the system.
     def from_hash(system_hash)
       guarentee_valid_hash(system_hash)
+      system_hash[:options] ||= {}
+
       sys = Souffle::System.new
       system_hash[:nodes].each do |n|
+        n[:options] ||= Hash.new
+        
         node = Souffle::Node.new
         node.name = n[:name]
         Array(n[:run_list]).each { |rl| node.run_list << rl }
         Array(n[:dependencies]).each { |dep| node.dependencies << dep }
-        Array(n[:options]).each { |opt| node.options << opt }
+        node.options = n[:options].merge(system_hash[:options])
         sys.add(node)
       end
       sys
