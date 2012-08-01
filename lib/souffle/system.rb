@@ -118,7 +118,7 @@ class Souffle::System
         node.name = n[:name]
         Array(n[:run_list]).each { |rl| node.run_list << rl }
         Array(n[:dependencies]).each { |dep| node.dependencies << dep }
-        node.options = n[:options].merge(system_hash[:options])
+        node.options = system_hash[:options].merge(n[:options])
         sys.add(node)
       end
       sys

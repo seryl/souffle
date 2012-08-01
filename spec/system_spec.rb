@@ -145,4 +145,33 @@ describe "Souffle::System" do
     new_sys.roots.size.should eql(2)
     new_sys.dependent_nodes.size.should eql(1)
   end
+
+  it "should be able to generate system options and merge from a hash" do
+    sys = {
+      :options => { :type => "chef" },
+      :nodes => [
+        { :name => "parent_node",
+          :options => { :type => "chef-solo" },
+          :run_list => ["role[somerole]"],
+          :dependencies => [] },
+        { :name => "lone_node",
+          :run_list => ["role[bestone]"],
+          :dependencies => [] },
+        { :name => "child_node",
+          :run_list => ["recipe[base]"],
+          :dependencies => ["role[somerole]"] }
+      ]
+    }
+
+    new_sys = Souffle::System.from_hash(sys)
+    new_sys.rebalance_nodes
+
+    parent = new_sys.nodes.select { |n| n.name == "parent_node" }.first
+    parent.children.first.name.should eql("child_node")
+    parent.options.should eql({ :type => "chef-solo" })
+    parent.children.first.options.should eql({ :type => "chef" })
+    
+    new_sys.roots.size.should eql(2)
+    new_sys.dependent_nodes.size.should eql(1)
+  end
 end
