@@ -19,6 +19,7 @@ class Souffle::Node
     @run_list = Souffle::Node::RunList.new
     @parents = []
     @children = []
+    @options = []
     @parent_multiplier = parent_multiplier
   end
 
