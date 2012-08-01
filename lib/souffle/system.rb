@@ -110,8 +110,9 @@ class Souffle::System
       system_hash[:nodes].each do |n|
         node = Souffle::Node.new
         node.name = n[:name]
-        n[:run_list].each { |rl| node.run_list << rl }
-        n[:dependencies].each { |dep| node.dependencies << dep }
+        Array(n[:run_list]).each { |rl| node.run_list << rl }
+        Array(n[:dependencies]).each { |dep| node.dependencies << dep }
+        Array(n[:options]).each { |opt| node.options << opt }
         sys.add(node)
       end
       sys
