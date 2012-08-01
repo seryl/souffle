@@ -30,3 +30,9 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 RSpec.configure do |config|
 
 end
+
+module Helpers
+  def get_config
+    Souffle::Config.from_file("/etc/souffle/souffle.rb")
+  end
+end

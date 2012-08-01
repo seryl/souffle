@@ -9,7 +9,11 @@ class Souffle::Provider::AWS < Souffle::Provider
   def setup
     @access_key    = Souffle::Config[:aws_access_key]
     @access_secret = Souffle::Config[:aws_access_secret]
-    @ec2 = RightAws::Ec2.new(@access_key, @access_secret)
+
+    @ec2 = RightAws::Ec2.new(
+      @access_key, @access_secret,
+      :region => Souffle::Config[:aws_region],
+      :logger => Souffle::Log.logger)
   end
   
   # The name of the given provider.
@@ -19,28 +23,62 @@ class Souffle::Provider::AWS < Souffle::Provider
   # 
   # @param [ Souffle::System ] system The system to instantiate.
   def create_system(system)
+    if using_vpc? and vpc_setup?
+    end
   end
 
-  # Takes a node definition and begins the provisioning process.
+  # Takes a list of node definitions and begins the provisioning process.
   # 
-  # @param [ Souffle::Node ] node The node to instantiate.
-  def create_node(node)
+  # @param [ Array ] nodes The list of nodes to instantiate.
+  def create_nodes(nodes)
+  end
+
+  # Takes a list of nodes an stops the instances.
+  # 
+  # @param [ Array ] nodes The list of nodes to stop.
+  def stop_node(nodes)
   end
 
   # Creates a raid array with the given requirements.
-  def create_raid
-    # @ec2.
+  # 
+  # @param [ Souffle::Node ] node The node create the raid for.
+  def create_raid(node)
   end
 
-  def create_ebs
-
+  # Creates ebs volumes for the given node.
+  # 
+  # @param [ Souffle::Node ] node The node to create ebs volumes for.
+  def create_ebs(node)
   end
 
   # Whether or not to use a vpc instance and subnet for provisioning.
   # 
   # @return [ true,false ] Whether to use a vpc instance and specific subnet.
-  def use_vpc?
+  def using_vpc?
     !!Souffle::Config[:aws_vpc_id] and
     !!Souffle::Config[:aws_subnet_id]
+  end
+
+  # Checks whether or not the vpc has the vpc and subnet setup proeprly.
+  # 
+  # @return [ true,false ] Whether or not the vpc is setup.
+  def vpc_setup?
+    vpc_exists? and subnet_exists?
+  end
+
+  # Checks whether or not the vpc currently exists.
+  # 
+  # @return [ true,false ] Whether or not the vpc exists.
+  def vpc_exists?
+    @ec2.describe_vpcs({:filters =>
+      { 'vpc-id' => Souffle::Config[:aws_vpc_id] } }).any?
+  end
+
+  # Checks whether or not the subnet currently exists.
+  # 
+  # @return [ true,false ] Whether or not the subnet exists.
+  def subnet_exists?
+    @ec2.describe_subnets({:filters =>
+      { 'subnet-id' => Souffle::Config[:aws_subnet_id] } }).any?
   end
 end

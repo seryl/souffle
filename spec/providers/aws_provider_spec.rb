@@ -1,7 +1,10 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "Souffle::Provider::AWS" do
+  include Helpers
+  
   before(:each) do
+    get_config
     @provider = Souffle::Provider::AWS.new
   end
 
@@ -20,7 +23,7 @@ describe "Souffle::Provider::AWS" do
     Souffle::Config[:aws_vpc_id] = aws_vpc_id
     Souffle::Config[:aws_subnet_id] = aws_subnet_id
 
-    @provider.use_vpc?.should eql(true)
+    @provider.using_vpc?.should eql(true)
   end
 
   it "should not use vpc when the keys are missing" do
@@ -29,14 +32,14 @@ describe "Souffle::Provider::AWS" do
 
     Souffle::Config[:aws_vpc_id] = aws_vpc_id
     Souffle::Config[:aws_subnet_id] = nil
-    @provider.use_vpc?.should eql(false)
+    @provider.using_vpc?.should eql(false)
 
     Souffle::Config[:aws_vpc_id] = nil
     Souffle::Config[:aws_subnet_id] = aws_subnet_id
-    @provider.use_vpc?.should eql(false)
+    @provider.using_vpc?.should eql(false)
 
     Souffle::Config[:aws_vpc_id] = nil
     Souffle::Config[:aws_subnet_id] = nil
-    @provider.use_vpc?.should eql(false)
+    @provider.using_vpc?.should eql(false)
   end
 end

@@ -80,6 +80,7 @@ class Souffle::Config
   # AWS Settings
   aws_access_key ""
   aws_access_secret ""
+  aws_region "us-west-1"
 
   # Rack Settings
   rack_host "0.0.0.0"
