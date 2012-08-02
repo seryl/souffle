@@ -50,17 +50,20 @@ class Souffle::Provider::AWS < Souffle::Provider
 
   # Takes a node definition and begins the provisioning process.
   # 
-  # @param [ Souffle::Node ] nodes The node to instantiate.
+  # @param [ Souffle::Node ] node The node to instantiate.
   # @param [ String ] tag The tag to use for the node.
   def create_node(node, tag="")
-    options = Hash.new
-    options[:min_count] = 1
-    options[:max_count] = 1
+    opts = Hash.new
+    opts[:min_count] = 1
+    opts[:max_count] = 1
 
     ebs_info = create_ebs(node)
+
     @ec2.launch_instances(
-      node[:options].fetch(:aws_image_id, Souffle::Config[:aws_image_id]),
-      options)
+      node.options.fetch(:aws_image_id, Souffle::Config[:aws_image_id]), opts)
+
+    node.options.merge(node)
+    @ec2.create_tags(node.options[:aws_instance_id], { "souffle" => tag })
   end
 
   # Takes a list of nodes an stops the instances.
@@ -94,7 +97,7 @@ class Souffle::Provider::AWS < Souffle::Provider
   # 
   # @param [ Souffle::Node ] node The node to create ebs volumes for.
   # 
-  # @param [ Array ] The list of created ebs volumes.
+  # @return [ Array ] The list of created ebs volumes.
   def create_ebs(node)
     volumes = Array.new
     Array(node[:options][:volumes]).each do |vol_list, volume|

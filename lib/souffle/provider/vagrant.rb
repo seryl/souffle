@@ -39,8 +39,8 @@ class Souffle::Provider::Vagrant < Souffle::Provider
     File.exists? "#{Dir.pwd}/souffle.json"
   end
 
+  # Creates a new virtualmachine group.
   def create_new_vm_group
-
   end
 
   # Generates the multi-vm configuration.

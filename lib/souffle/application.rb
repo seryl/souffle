@@ -114,8 +114,8 @@ class Souffle::Application
     # Log a fatal error message to both STDERR and the Logger,
     # exit the application with a fatal message.
     #
-    # @param [ msg ] String The message to log.
-    # @param [ err ] Integer The exit level.
+    # @param [ String ] msg The message to log.
+    # @param [ Integer ] err The exit level.
     def fatal!(msg, err = -1)
       Souffle::Log.fatal(msg)
       Process.exit err
@@ -124,8 +124,8 @@ class Souffle::Application
     # Log a fatal error message to both STDERR and the Logger,
     # exit the application with a debug message.
     #
-    # @param [ msg ] String The message to log.
-    # @param [ err ] Integer The exit level.
+    # @param [ String ] msg The message to log.
+    # @param [ Integer ] err The exit level.
     def exit!(msg, err = -1)
       Souffle::Log.debug(msg)
       Process.exit err
