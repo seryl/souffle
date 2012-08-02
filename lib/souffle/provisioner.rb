@@ -1,7 +1,5 @@
-module Souffle
-  # Starts up the base provisioner class with system and node state machines.
-  class Provisioner; end
-end
+# Starts up the base provisioner class with system and node state machines.
+class Souffle::Provisioner; end
 
 require 'souffle/provisioner/node'
 require 'souffle/provisioner/system'

@@ -1,7 +1,5 @@
-module Souffle
-  # A node object that's part of a given system.
-  class Node; end
-end
+# A node object that's part of a given system.
+class Souffle::Node; end
 
 require 'souffle/node/runlist_item'
 require 'souffle/node/runlist'
