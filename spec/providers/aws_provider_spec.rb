@@ -42,4 +42,14 @@ describe "Souffle::Provider::AWS" do
     Souffle::Config[:aws_subnet_id] = nil
     @provider.using_vpc?.should eql(false)
   end
+
+  it "should be able to generate a unique tag" do
+    tag1 = @provider.generate_tag
+    tag2 = @provider.generate_tag
+    tag1.should_not eql(tag2)
+  end
+
+  it "shoudl be able to generate a unique tag with a prefix" do
+    @provider.generate_tag("example").include?("example").should eql(true)
+  end
 end

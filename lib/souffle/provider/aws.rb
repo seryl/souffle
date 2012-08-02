@@ -58,11 +58,12 @@ class Souffle::Provider::AWS < Souffle::Provider
     opts[:max_count] = 1
 
     ebs_info = create_ebs(node)
+    ebs_opts = {}
 
     @ec2.launch_instances(
       node.options.fetch(:aws_image_id, Souffle::Config[:aws_image_id]), opts)
 
-    node.options.merge(node)
+    node.options.merge(ebs_opts)
     @ec2.create_tags(node.options[:aws_instance_id], { "souffle" => tag })
   end
 
