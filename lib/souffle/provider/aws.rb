@@ -93,11 +93,17 @@ class Souffle::Provider::AWS < Souffle::Provider
   # Creates ebs volumes for the given node.
   # 
   # @param [ Souffle::Node ] node The node to create ebs volumes for.
+  # 
+  # @param [ Array ] The list of created ebs volumes.
   def create_ebs(node)
-
-    @ec2.create_volume(
-      node[:options].fetch(:aws_),
-      node[:options][:aws_availability_zone])
+    volumes = Array.new
+    Array(node[:options][:volumes]).each do |vol_list, volume|
+      volumes << @ec2.create_volume(
+        node[:options].fetch(:aws_snapshot_id, ""),
+        node[:options][:aws_ebs_size],
+        node[:options][:aws_availability_zone] )
+    end
+    volumes
   end
 
   # Whether or not to use a vpc instance and subnet for provisioning.
