@@ -17,6 +17,14 @@ class Souffle::Provider
     raise Souffle::Exceptions::Provider, error_msg
   end
 
+  # Extends a node with the current provider's helper functions.
+  # 
+  # @param [ Souffle::System ] system The system to extend with helpers.
+  def add_helpers(system)
+    system.send(:extend, helper(:System))
+    system.nodes.each { |node| node.send(:extend, helper(:Node)) }
+  end
+
   # Creates a system for a given provider. Intended to be overridden.
   #
   # @raise [Souffle::Exceptions::Provider] This definition must be overrridden.
@@ -41,5 +49,19 @@ class Souffle::Provider
   def create_raid
     error_msg = "#{self.to_s}: you must override create_raid"
     raise Souffle::Exceptions::Provider, error_msg
+  end
+
+  # Helper modules for extending node functionality based on a provider.
+  module Helpers; end
+
+  private
+
+  # Helper function to get the helper module and children.
+  # 
+  # @param [ Symbol ] mod The provider module helper to select.
+  # 
+  # @return [ Module ] The provider helper module.
+  def helper(mod)
+    Souffle::Provider::Helpers.const_get(name).const_get(mod)
   end
 end
