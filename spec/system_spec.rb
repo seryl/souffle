@@ -152,6 +152,30 @@ describe "Souffle::System" do
     lambda { Souffle::System.from_hash(sys) }.should raise_error
   end
 
+  it "should be able to get system options with try_opt" do
+    @system.options[:example_opt] = "sporkmejohhny"
+    @system.try_opt(:example_opt).should eql("sporkmejohhny")
+  end
+
+  it "should pass-thru to config options when they do not exist" do
+    Souffle::Config[:example_passthru] = "blehk"
+    @system.try_opt(:example_passthru).should eql("blehk")
+    Souffle::Config.configuration.delete(:example_passthru)
+  end
+
+  it "should let child nodes get system opts with pass-thru" do
+    node = Souffle::Node.new
+    @system.add(node)
+    @system.options[:example_opt] = "sporkmejohhny"
+    @system.nodes.first.try_opt(:example_opt).should eql("sporkmejohhny")
+  end
+
+  it "should pass-thru to config options when they do not exist" do
+    Souffle::Config[:example_passthru] = "blehk"
+    @system.try_opt(:example_passthru).should eql("blehk")
+    Souffle::Config.configuration.delete(:example_passthru)
+  end
+
   it "should be able to generate a system from a hash" do
     sys = {
       :nodes => [

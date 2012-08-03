@@ -103,6 +103,17 @@ class Souffle::System
     @nodes.select { |n| n.dependencies.any? }
   end
 
+  # Tries to fetch an option parameter otherwise it grabs it from config.
+  # 
+  # @param [ Symbol ] opt The option to try and fetch.
+  # 
+  # @return [ String ] The option return value.
+  def try_opt(opt)
+    options.fetch(opt, Souffle::Config[opt])
+  rescue
+    nil
+  end
+
   class << self
     # Creates a new system from a given hash.
     # 

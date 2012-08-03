@@ -84,11 +84,15 @@ class Souffle::Node
 
   # Tries to fetch an option parameter otherwise it grabs it from config.
   # 
-  # @param [ String,Symbol ] opt The option to try and fetch.
+  # @param [ Symbol ] opt The option to try and fetch.
   # 
   # @return [ String ] The option return value.
   def try_opt(opt)
-    options.fetch(opt.to_sym, Souffle::Config[opt.to_sym])
+    if system
+      options.fetch(opt, system.try_opt(opt))
+    else
+      options.fetch(opt, Souffle::Config[opt])
+    end
   rescue
     nil
   end
