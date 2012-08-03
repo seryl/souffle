@@ -53,18 +53,28 @@ class Souffle::Provider::AWS < Souffle::Provider
   # @param [ Souffle::Node ] node The node to instantiate.
   # @param [ String ] tag The tag to use for the node.
   def create_node(node, tag="")
+
+    # ebs_info = create_ebs(node)
+    # ebs_opts = {}
+
     opts = Hash.new
+    opts[:instance_type] = node.try_opt(:aws_instance_type)
     opts[:min_count] = 1
     opts[:max_count] = 1
+    if using_vpc?
+      opts[:subnet_id] = node.try_opt(:aws_subnet_id)
+      node[:aws_subnet_id] = node.try_opt(:aws_subnet_id)
+      node[:aws_vpc_id] = node.try_opt(:aws_vpc_id)
+    end
 
-    ebs_info = create_ebs(node)
-    ebs_opts = {}
-
-    @ec2.launch_instances(
-      node.options.fetch(:aws_image_id, Souffle::Config[:aws_image_id]), opts)
-
-    node.options.merge(ebs_opts)
-    @ec2.create_tags(node.options[:aws_instance_id], { "souffle" => tag })
+    instance_info = @ec2.launch_instances(
+      node.try_opt(:aws_image_id), opts).first
+    
+    node.options[:aws_instance_id] = instance_info[:aws_instance_id]
+    @ec2.create_tags(Array(node.options[:aws_instance_id]), {
+      :Name => node.name,
+      :souffle => tag
+    })
   end
 
   # Takes a list of nodes an stops the instances.

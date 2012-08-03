@@ -52,4 +52,18 @@ describe "Souffle::Provider::AWS" do
   it "should be able to generate a unique tag with a prefix" do
     @provider.generate_tag("example").include?("example").should eql(true)
   end
+
+  # it "should be able to launch an ebs volume" do
+  # end
+
+  # it "should be able to launch a node" do
+  #   node = Souffle::Node.new
+  #   node.name = "TheBestNameEver"
+  #   @provider.setup
+  #   @provider.create_node(node, "example_tag")
+
+  #   p node
+  #   sleep 20
+  #   @provider.kill_nodes(node)
+  # end
 end
