@@ -108,4 +108,15 @@ describe "Souffle::Node" do
     @node.name = "AwesomeName"
     @node.name.should eql("AwesomeName")
   end
+
+  it "should be able to get node options with try_opt" do
+    @node.options[:example_opt] = "sporkmejohhny"
+    @node.try_opt(:example_opt).should eql("sporkmejohhny")
+  end
+
+  it "should pass-thru to config options when they do not exist" do
+    Souffle::Config[:example_passthru] = "blehk"
+    @node.try_opt(:example_passthru).should eql("blehk")
+    Souffle::Config.configuration.delete(:example_passthru)
+  end
 end

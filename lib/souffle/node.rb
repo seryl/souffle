@@ -81,4 +81,15 @@ class Souffle::Node
   def weight
     @parents.inject(1) { |res, p| res + p.weight * @parent_multiplier }
   end
+
+  # Tries to fetch an option parameter otherwise it grabs it from config.
+  # 
+  # @param [ String,Symbol ] opt The option to try and fetch.
+  # 
+  # @return [ String ] The option return value.
+  def try_opt(opt)
+    options.fetch(opt.to_sym, Souffle::Config[opt.to_sym])
+  rescue
+    nil
+  end
 end
