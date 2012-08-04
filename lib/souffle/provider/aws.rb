@@ -223,4 +223,18 @@ class Souffle::Provider::AWS < Souffle::Provider
   def volume_id_to_device(volume_id)
     "/dev/hd#{(volume_id + 98).chr}"
   end
+
+  # Installs mdadm (multiple device administration) to manage raid.
+  # 
+  # @param [ Souffle::Node ] node The node to install mdadm on.
+  def install_mdadm
+  end
+
+  # Sets up software raid for the given node.
+  # 
+  # @param [ Souffle::Node ] node The node setup raid for.
+  def setup_raid(node)
+    node.options[:volumes].each_with_index do |volume, index|
+    end
+  end
 end
