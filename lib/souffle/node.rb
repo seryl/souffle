@@ -11,7 +11,7 @@ class Souffle::Node
 
   # Creates a new souffle node with bare dependencies and run_list.
   # 
-  # @param [ Integer ] parent_multiplier The multiplier for parent nodes.
+  # @param [ Fixnum ] parent_multiplier The multiplier for parent nodes.
   def initialize(parent_multiplier=5)
     @dependencies = Souffle::Node::RunList.new
     @run_list = Souffle::Node::RunList.new
@@ -77,7 +77,7 @@ class Souffle::Node
 
   # The dependency weight of a given node.
   # 
-  # @return [ Integer ] The relative weight of a node used for balancing.
+  # @return [ Fixnum ] The relative weight of a node used for balancing.
   def weight
     @parents.inject(1) { |res, p| res + p.weight * @parent_multiplier }
   end

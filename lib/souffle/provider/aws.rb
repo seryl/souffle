@@ -217,7 +217,7 @@ class Souffle::Provider::AWS < Souffle::Provider
   # 
   # @note This starts at /dev/hdb and goes to /dev/hdz, etc.
   # 
-  # @param [ Integer ] volume_id The count in the array for the volume id.
+  # @param [ Fixnum ] volume_id The count in the array for the volume id.
   # 
   # @return [ String ] The device string to mount to.
   def volume_id_to_device(volume_id)
