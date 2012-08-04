@@ -19,28 +19,30 @@ describe "Souffle::Provider::AWS" do
   it "should be able to see whether the configuration has vpc setup" do
     aws_vpc_id = "vpc-124ae13"
     aws_subnet_id = "subnet-24f6a87f"
+    node = Souffle::Node.new
 
     Souffle::Config[:aws_vpc_id] = aws_vpc_id
     Souffle::Config[:aws_subnet_id] = aws_subnet_id
 
-    @provider.using_vpc?.should eql(true)
+    @provider.using_vpc?(node).should eql(true)
   end
 
   it "should not use vpc when the keys are missing" do
     aws_vpc_id = "vpc-124ae13"
     aws_subnet_id = "subnet-24f6a87f"
+    node = Souffle::Node.new
 
     Souffle::Config[:aws_vpc_id] = aws_vpc_id
     Souffle::Config[:aws_subnet_id] = nil
-    @provider.using_vpc?.should eql(false)
+    @provider.using_vpc?(node).should eql(false)
 
     Souffle::Config[:aws_vpc_id] = nil
     Souffle::Config[:aws_subnet_id] = aws_subnet_id
-    @provider.using_vpc?.should eql(false)
+    @provider.using_vpc?(node).should eql(false)
 
     Souffle::Config[:aws_vpc_id] = nil
     Souffle::Config[:aws_subnet_id] = nil
-    @provider.using_vpc?.should eql(false)
+    @provider.using_vpc?(node).should eql(false)
   end
 
   it "should be able to generate a unique tag" do
@@ -53,17 +55,53 @@ describe "Souffle::Provider::AWS" do
     @provider.generate_tag("example").include?("example").should eql(true)
   end
 
+  it "should return a list of instance ids for a list of nodes" do
+    node1 = Souffle::Node.new
+    node2 = Souffle::Node.new
+    node3 = Souffle::Node.new
+
+    node1.options[:aws_instance_id] = "1a"
+    node2.options[:aws_instance_id] = "2b"
+    node3.options[:aws_instance_id] = "3c"
+
+    nodelist = [node1, node2, node3]
+    @provider.instance_id_list(nodelist).should eql(["1a", "2b", "3c"])
+  end
+
   # it "should be able to launch an ebs volume" do
+  #   @provider.setup
+
+  #   node = Souffle::Node.new
+  #   node.name = "TheBestNameEver"
+  #   node.options[:aws_ebs_size] = 11
+  #   node.options[:volume_count] = 2
+
+  #   @provider.create_ebs(node)
+  #   @provider.create_node(node, @provider.generate_tag("test"))
+
+  #   # sleep 20
+  #   # @provider.attach_ebs(node)
+
+  #   # sleep 10
+  #   # require 'pry'
+  #   # binding.pry
   # end
 
   # it "should be able to launch a node" do
   #   node = Souffle::Node.new
   #   node.name = "TheBestNameEver"
-  #   @provider.setup
-  #   @provider.create_node(node, "example_tag")
+  #   node.options[:aws_ebs_size] = 11
+  #   node.options[:volume_count] = 2
+  #   require 'pry'
 
-  #   p node
-  #   sleep 20
-  #   @provider.kill_nodes(node)
+  #   @provider.setup
+  #   binding.pry
+
+  #   # @provider.create_ebs(node)
+  #   # @provider.create_node(node, "example_tag")
+
+  #   # p node
+  #   # sleep 20
+  #   # @provider.kill_nodes(node)
   # end
 end
