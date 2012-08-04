@@ -60,7 +60,7 @@ class Souffle::Daemon
     
     # Sucks the pid out of pid_file.
     # 
-    # @return [ Integer,nil ] The PID from pid_file or nil if it doesn't exist.
+    # @return [ Fixnum,NilClass ] The PID from pid_file or nil if it doesn't exist.
     def pid_from_file
       File.read(pid_file).chomp.to_i
     rescue Errno::ENOENT, Errno::EACCES

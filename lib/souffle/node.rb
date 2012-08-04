@@ -63,7 +63,7 @@ class Souffle::Node
 
   # Iterator method for children.
   # 
-  # @yield [ Souffle::Node,nil ] The child node.
+  # @yield [ Souffle::Node,NilClass ] The child node.
   def each_child
     @children.each { |child| yield child }
   end

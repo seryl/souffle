@@ -24,9 +24,9 @@ class Souffle::Node::RunListParser
 
     # Takes the matches and converts them into a hashed version.
     # 
-    # @param [ MatchData,nil ] match The MatchData to hashify.
+    # @param [ MatchData,NilClass ] match The MatchData to hashify.
     # 
-    # @return [ Hash,nil ] The hashified version of the runlist item.
+    # @return [ Hash,NilClass ] The hashified version of the runlist item.
     def hashify_match(match)
       return nil if match.nil?
       Hash[*match.names.zip(match.captures).flatten]
