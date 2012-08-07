@@ -80,7 +80,7 @@ class Souffle::Provider
   # 
   # @yield [ EventMachine::Ssh::Session ] The ssh session.
   def ssh_block(address, user="root", pass=nil, opts={})
-    EM.Ssh.start(address, user, pass, opts) do |connection|
+    EM::Ssh.start(address, user, pass, opts) do |connection|
       connection.errback do |err|
         Souffle::Log.error "SSH Error: #{err} (#{err.class})"
       end
