@@ -64,4 +64,28 @@ class Souffle::Provider
   def helper(mod)
     Souffle::Provider::Helpers.const_get(name).const_get(mod)
   end
+
+  # Yields an ssh object to manage the commands naturally from there.
+  # 
+  # @param [ String ] address The address of the machine to connect to.
+  # @param [ String ] user The user to connect as.
+  # @param [ String, NilClass ] pass By default publickey and password auth
+  # will be attempted.
+  # @param [ Hash ] opts The options hash.
+  # @option opts [ Hash ] :net_ssh Options to pass to Net::SSH,
+  # see Net::SSH.start
+  # @option opts [ Hash ] :timeout (TIMEOUT) default timeout for all #wait_for
+  # and #send_wait calls.
+  # @option opts [ Boolean ] :reconnect When disconnected reconnect.
+  # 
+  # @yield [ EventMachine::Ssh::Session ] The ssh session.
+  def ssh_block(address, user="root", pass=nil, opts={})
+    EM.Ssh.start(address, user, pass, opts) do |connection|
+      connection.errback do |err|
+        Souffle::Log.error "SSH Error: #{err} (#{err.class})"
+      end
+      connection.callback { |ssh| yield(ssh); ssh.close }
+    end
+  end
+
 end

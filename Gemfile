@@ -7,6 +7,7 @@ gem "yajl-ruby", "~> 1.1.0"
 gem "eventmachine", "~> 0.12.10"
 gem "amqp", "~> 0.9.7"
 gem "state_machine", "~> 1.1.2"
+gem "em-ssh", "~> 0.4.0"
 
 gem "right_aws", "~> 3.0.4"
 gem "tilt", "~> 1.3.3"

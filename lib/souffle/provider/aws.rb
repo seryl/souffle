@@ -17,7 +17,7 @@ class Souffle::Provider::AWS < Souffle::Provider
       :region => Souffle::Config[:aws_region],
       :logger => Souffle::Log.logger)
   end
-  
+
   # The name of the given provider.
   def name; "AWS"; end
 
@@ -110,7 +110,26 @@ class Souffle::Provider::AWS < Souffle::Provider
   # Creates a raid array with the given requirements.
   # 
   # @param [ Souffle::Node ] node The node to the raid for.
-  def create_raid(node)
+  # @param [ Array ] devices The list of devices to use for the raid.
+  # @param [ Fixnum ] md_device The md device number.
+  # @param [ Fixnum ] chunk The chunk size in kilobytes.
+  # @param [ String ] level The raid level to use.
+  # options are: linear, raid0, 0, stipe, raid1, 1, mirror,
+  # raid4, 4, raid5, 5, raid6, 6, multipath, mp
+  def create_raid(node, devices=[], md_device=0, chunk=64, level="raid0")
+    mdadm_string =  "mdadm --create /dev/md#{md_device} "
+    mdadm_string << "--chunk=#{chunk} --level=#{level} "
+    mdadm_string << "--raid-devices=#{devices.size} #{devices.join(' ')}"
+    ssh_cmd(node) { |ssh| ssh.exec!(mdadm_string) }
+  end
+
+  # Formats a device on a given node with the provided filesystem.
+  # 
+  # @param [ Souffle::Node ] node The node to format a device on.
+  # @param [ String ] device The device to format.
+  # @param [ String ] filesystem The filesystem to use when formatting.
+  def format_device(node, device, filesystem="ext4")
+    ssh_cmd(node) { |ssh| ssh.exec!(fs_formatter(filesystem)) }
   end
 
   # Creates ebs volumes for the given node.
@@ -213,6 +232,25 @@ class Souffle::Provider::AWS < Souffle::Provider
 
   private
 
+  # Yields an ssh object to manage the commands naturally from there.
+  # 
+  # @param [ Souffle::Node ] node The node to run commands against.
+  # @param [ String ] user The user to connect as.
+  # @param [ String, NilClass ] pass By default publickey and password auth
+  # will be attempted.
+  # @param [ Hash ] opts The options hash.
+  # @option opts [ Hash ] :net_ssh Options to pass to Net::SSH,
+  # see Net::SSH.start
+  # @option opts [ Hash ] :timeout (TIMEOUT) default timeout for all #wait_for
+  # and #send_wait calls.
+  # @option opts [ Boolean ] :reconnect When disconnected reconnect.
+  # 
+  # @yield [ EventMachine::Ssh::Session ] The ssh session.
+  def ssh_block(node, user="root", pass=nil, opts={})
+    n = @ec2.describe_instances(node[:aws_instance_id])
+    super(n[:private_ip_address], user, pass, opts)
+  end
+
   # Takes the volume count in the array and converts it to a device name.
   # 
   # @note This starts at /dev/hdb and goes to /dev/hdz, etc.
@@ -224,16 +262,27 @@ class Souffle::Provider::AWS < Souffle::Provider
     "/dev/hd#{(volume_id + 98).chr}"
   end
 
+  # Chooses the appropriate formatter for the given filesystem.
+  # 
+  # @param [ String ] filesystem The filessytem you intend to use.
+  # 
+  # @param [ String ] The filesystem formatter.
+  def fs_formatter(filesystem)
+    "mkfs.#{filesystem}"
+  end
+
   # Installs mdadm (multiple device administration) to manage raid.
   # 
   # @param [ Souffle::Node ] node The node to install mdadm on.
-  def install_mdadm
+  def install_mdadm(node)
+    ssh_cmd(node) { |ssh| ssh.exec!("yum install -y mdadm") }
   end
 
   # Sets up software raid for the given node.
   # 
   # @param [ Souffle::Node ] node The node setup raid for.
   def setup_raid(node)
+    install_mdadm(node)
     node.options[:volumes].each_with_index do |volume, index|
     end
   end
