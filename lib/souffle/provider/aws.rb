@@ -8,7 +8,10 @@ class Souffle::Provider::AWS < Souffle::Provider
   attr_reader :access_key, :access_secret
 
   # Setup the internal AWS configuration and object.
-  def setup
+  # 
+  # @param [ Souffle::Provisioner ] provisioner The provisioner object.
+  def setup(provisioner=nil)
+    @provisioner = provisioner
     @access_key    = Souffle::Config[:aws_access_key]
     @access_secret = Souffle::Config[:aws_access_secret]
 
@@ -103,7 +106,7 @@ class Souffle::Provider::AWS < Souffle::Provider
   # Takes a list of nodes and kills them. (Haha)
   # 
   # @param [ Souffle::Node ] nodes The list of nodes to terminate.
-  def kill_nodes(nodes)
+  def kill(nodes)
     @ec2.terminate_instances(instance_id_list(nodes))
   end
 

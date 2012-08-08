@@ -3,9 +3,11 @@ class Souffle::Provider
   
   # The setup method for the provider. Intended to be overridden.
   # 
+  # @param [ Souffle::Provisioner ] provisioner The provisioner object.
+  # 
   # @raise [Souffle::Exceptions::Provider] This definition must be overridden.
-  def setup
-    error_msg = "#{self.to_s}: you must override setup"
+  def setup(provisioner=nil)
+    error_msg = "#{self.class.to_s}: you must override setup"
     raise Souffle::Exceptions::Provider, error_msg
   end
 
@@ -13,7 +15,7 @@ class Souffle::Provider
   # 
   # @raise [Souffle::Exceptions::Provider] This definition must be overridden.
   def name
-    error_msg = "#{self.to_s}: you must override name"
+    error_msg = "#{self.class.to_s}: you must override name"
     raise Souffle::Exceptions::Provider, error_msg
   end
 
@@ -30,8 +32,9 @@ class Souffle::Provider
   # @raise [Souffle::Exceptions::Provider] This definition must be overrridden.
   # 
   # @param [ Souffle::System ] system The system to instantiate.
-  def create_system(system)
-    error_msg = "#{self.to_s}: you must override create_system"
+  # @param [ String ] tag The tag to use for the system.
+  def create_system(system, tag="souffle")
+    error_msg = "#{self.class.to_s}: you must override create_system"
     raise Souffle::Exceptions::Provider, error_msg
   end
 
@@ -39,7 +42,7 @@ class Souffle::Provider
   # 
   # @param [ Souffle::Node ] node The node to instantiate.
   def create_node(node)
-    error_msg = "#{self.to_s}: you must override create_node"
+    error_msg = "#{self.class.to_s}: you must override create_node"
     raise Souffle::Exceptions::Provider, error_msg
   end
 
@@ -47,7 +50,7 @@ class Souffle::Provider
   # 
   # @raise [Souffle::Exceptions::Provider] This definition must be overridden.
   def create_raid
-    error_msg = "#{self.to_s}: you must override create_raid"
+    error_msg = "#{self.class.to_s}: you must override create_raid"
     raise Souffle::Exceptions::Provider, error_msg
   end
 
