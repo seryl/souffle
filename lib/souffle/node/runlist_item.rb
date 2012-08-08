@@ -49,4 +49,5 @@ class Souffle::Node::RunListItem
   def eql?(runlist_item)
     self.to_s == runlist_item.to_s
   end
+  
 end
