@@ -29,13 +29,11 @@ describe "Souffle::Provisioner" do
   it "should be able to setup an Vagrant provider" do
     Souffle::Config[:provider] = "Vagrant"
     @provisioner = Souffle::Provisioner.new
-    @provisioner.setup_provider
   end
 
   it "should be able to setup an AWS provider" do
     Souffle::Config[:provider] = "AWS"
     @provisioner = Souffle::Provisioner.new
-    @provisioner.setup_provider
   end
 
   it "raises an InvalidProvider error when the provider doesn't exist" do

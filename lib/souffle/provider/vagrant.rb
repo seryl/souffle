@@ -14,6 +14,8 @@ class Souffle::Provider::Vagrant < Souffle::Provider
     @vagrant_dir = Souffle::Config[:vagrant_dir]
     create_new_vm_group unless current_folder_has_souffle_config?
     generate_vagrant_config
+
+    @provisioner.initialized unless provisioner.nil?
   end
 
   # The name of the given provider.

@@ -9,8 +9,8 @@ class Souffle::Provider::AWS < Souffle::Provider
 
   # Setup the internal AWS configuration and object.
   # 
-  # @param [ Souffle::Provisioner ] provisioner The provisioner object.
-  def setup(provisioner=nil)
+  # @param [ Souffle::Provisioner ] system_provisioner The provisioner object.
+  def setup(system_provisioner=nil)
     @provisioner = provisioner
     @access_key    = Souffle::Config[:aws_access_key]
     @access_secret = Souffle::Config[:aws_access_secret]
@@ -19,6 +19,8 @@ class Souffle::Provider::AWS < Souffle::Provider
       @access_key, @access_secret,
       :region => Souffle::Config[:aws_region],
       :logger => Souffle::Log.logger)
+    
+    @provisioner.initialized unless provisioner.nil?
   end
 
   # The name of the given provider.
@@ -46,31 +48,37 @@ class Souffle::Provider::AWS < Souffle::Provider
   # 
   # @param [ Array ] nodes The list of nodes to get instance_id's from.
   def instance_id_list(nodes)
-    node_id_list = Array.new
-    Array(nodes).each { |n| node_id_list << n.options[:aws_instance_id] }
-    node_id_list
+    Array(nodes).map { |n| n.options[:aws_instance_id] }
   end
 
   # Takes a node definition and begins the provisioning process.
   # 
   # @param [ Souffle::Node ] node The node to instantiate.
   # @param [ String ] tag The tag to use for the node.
-  def create_node(node, tag)
+  def create_node(node, tag=nil)
     opts = Hash.new
     opts[:instance_type] = node.try_opt(:aws_instance_type)
     opts[:min_count] = 1
     opts[:max_count] = 1
     if using_vpc?(node)
       opts[:subnet_id] = node.try_opt(:aws_subnet_id)
-      node.options[:aws_subnet_id] = node.try_opt(:aws_subnet_id)
-      node.options[:aws_vpc_id] = node.try_opt(:aws_vpc_id)
+      opts[:aws_subnet_id] = node.try_opt(:aws_subnet_id)
+      opts[:aws_vpc_id] = Array(node.try_opt(:aws_vpc_id))
+      opts[:group_ids] = Array(node.try_opt(:group_ids))
+    else
+      opts[:group_names] = node.try_opt(:group_names)
     end
+    opts[:key_name] = node.try_opt(:key_name)
+    node.options[:tag] = tag unless tag.nil?
 
+    create_ebs(node)
     instance_info = @ec2.launch_instances(
       node.try_opt(:aws_image_id), opts).first
     
     node.options[:aws_instance_id] = instance_info[:aws_instance_id]
-    tag_node(node, tag)
+    tag_node(node, node.try_opts(:tag))
+
+    @provisioner.created
   end
 
   # Tags a node and it's volumes.
@@ -110,6 +118,14 @@ class Souffle::Provider::AWS < Souffle::Provider
     @ec2.terminate_instances(instance_id_list(nodes))
   end
 
+  # Takes a list of nodes kills them and then recreates them.
+  # 
+  # @param [ Souffle::Node ] nodes The list of nodes to kill and recreate.
+  def kill_and_recreate(nodes)
+    kill(nodes)
+    @provisioner.reclaimed
+  end
+
   # Creates a raid array with the given requirements.
   # 
   # @param [ Souffle::Node ] node The node to the raid for.
@@ -120,10 +136,17 @@ class Souffle::Provider::AWS < Souffle::Provider
   # options are: linear, raid0, 0, stipe, raid1, 1, mirror,
   # raid4, 4, raid5, 5, raid6, 6, multipath, mp
   def create_raid(node, devices=[], md_device=0, chunk=64, level="raid0")
-    mdadm_string =  "mdadm --create /dev/md#{md_device} "
+    dev_list = devices.map { |s| "#{s}1" }
+    mdadm_string =  "/sbin/mdadm --create /dev/md#{md_device} "
     mdadm_string << "--chunk=#{chunk} --level=#{level} "
-    mdadm_string << "--raid-devices=#{devices.size} #{devices.join(' ')}"
-    ssh_cmd(node) { |ssh| ssh.exec!(mdadm_string) }
+    mdadm_string << "--raid-devices=#{devices.size} #{dev_list.join(' ')}"
+
+    export_mdadm = "/sbin/mdadm --detail --scan > /etc/mdadm.conf"
+
+    ssh_cmd(node) do |ssh|
+      ssh.exec!(mdadm_string)
+      ssh.exec!("sleep 2 && #{export_mdadm}")
+    end
   end
 
   # Formats a device on a given node with the provided filesystem.
@@ -132,7 +155,67 @@ class Souffle::Provider::AWS < Souffle::Provider
   # @param [ String ] device The device to format.
   # @param [ String ] filesystem The filesystem to use when formatting.
   def format_device(node, device, filesystem="ext4")
-    ssh_cmd(node) { |ssh| ssh.exec!(fs_formatter(filesystem)) }
+    ssh_cmd(node) do |ssh|
+      ssh.exec!("#{fs_formatter(filesystem)} #{device}")
+    end
+  end
+
+  # Partitions a device on a given node with the given partition_type.
+  # 
+  # @note Currently this is a naive implementation and uses the full disk.
+  # 
+  # @param [ Souffle::Node ] node The node to partition a device on.
+  # @param [ String ] device The device to partition.
+  # @param [ String ] partition_type The type of partition to create.
+  def partition_device(node, device, partition_type="fd")
+    ssh_cmd(node) do |ssh|
+      ssh.exec!("""/sbin/sfdisk #{device} << EOF
+      ,,#{partition_type}
+      EOF""")
+    end
+    @provisioner.partitioned_device
+  end
+
+  # Sets up the lvm partition for the raid devices.
+  # 
+  # @param [ Souffle::Node ] node The node to setup lvm on.
+  def setup_lvm(node)
+    ssh_cmd(node) do |ssh|
+      ssh.exec!("pvcreate /dev/md0p1")
+      ssh.exec!("sleep 1 && vgcreate VolGroup00 /dev/md0p1")
+      ssh.exec!("sleep 2 && lvcreate -l 100%vg VolGroup00 -n data")
+    end
+  end
+
+  # Mounts the newly created lvm configuration and adds it to fstab.
+  # 
+  # @param [ Souffle::Node ] node The node to mount lvm on.
+  def mount_lvm(node)
+    fstab_str =  "LABEL=data      /data"
+    fstab_str << "     ext4    noatime,nodiratime  1  1"
+
+    mount_str =  "mount -o rw,noatime,nodiratime"
+    mount_str << " /dev/mapper/VolGroup00-data /data"
+    ssh_cmd(node) do |ssh|
+      ssh.exec!("mkdir /data")
+      ssh.exec!(mount_str)
+      ssh.exec!("echo #{fstab_str} >> /etc/fstab")
+    end
+  end
+
+  # Installs mdadm (multiple device administration) to manage raid.
+  # 
+  # @param [ Souffle::Node ] node The node to install mdadm on.
+  def setup_mdadm(node)
+    ssh_cmd(node) { |ssh| ssh.exec!("/usr/bin/yum install -y mdadm") }
+  end
+
+  # Sets up software raid for the given node.
+  # 
+  # @param [ Souffle::Node ] node The node setup raid for.
+  def setup_raid(node)
+    node.options[:volumes].each_with_index do |volume, index|
+    end
   end
 
   # Creates ebs volumes for the given node.
@@ -144,8 +227,8 @@ class Souffle::Provider::AWS < Souffle::Provider
     volumes = Array.new
     node.options[:volume_count].times do
       volumes << @ec2.create_volume(
-        node.options.fetch(:aws_snapshot_id, ""),
-        node.options[:aws_ebs_size],
+        node.try_opt(:aws_snapshot_id, ""),
+        node.try_opt(:aws_ebs_size),
         node.try_opt(:aws_availability_zone) )
     end
     node.options[:volumes] = volumes
@@ -256,13 +339,17 @@ class Souffle::Provider::AWS < Souffle::Provider
 
   # Takes the volume count in the array and converts it to a device name.
   # 
-  # @note This starts at /dev/hdb and goes to /dev/hdz, etc.
+  # @note This starts at /dev/xvda and goes to /dev/xvdb, etc.
+  # And due to the special case on AWS, skips /dev/xvde.
   # 
   # @param [ Fixnum ] volume_id The count in the array for the volume id.
   # 
   # @return [ String ] The device string to mount to.
   def volume_id_to_device(volume_id)
-    "/dev/hd#{(volume_id + 98).chr}"
+    if volume_id >= 4
+      volume_id += 1
+    end
+    "/dev/xvd#{(volume_id + "a".ord).chr}"
   end
 
   # Chooses the appropriate formatter for the given filesystem.
@@ -272,21 +359,5 @@ class Souffle::Provider::AWS < Souffle::Provider
   # @param [ String ] The filesystem formatter.
   def fs_formatter(filesystem)
     "mkfs.#{filesystem}"
-  end
-
-  # Installs mdadm (multiple device administration) to manage raid.
-  # 
-  # @param [ Souffle::Node ] node The node to install mdadm on.
-  def install_mdadm(node)
-    ssh_cmd(node) { |ssh| ssh.exec!("yum install -y mdadm") }
-  end
-
-  # Sets up software raid for the given node.
-  # 
-  # @param [ Souffle::Node ] node The node setup raid for.
-  def setup_raid(node)
-    install_mdadm(node)
-    node.options[:volumes].each_with_index do |volume, index|
-    end
   end
 end

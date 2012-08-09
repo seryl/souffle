@@ -50,14 +50,9 @@ class Souffle::Provisioner
       "The provider Souffle::Provider::#{provider} does not exist."
   end
 
-  # Proxy to the provider setup routine.
-  def setup_provider
-    @provider.setup(self)
-  end
-
   # Starts the provisioning process keeping a local lookup to the provisioner.
   def begin_provisioning
-    @provisioner = Souffle::Provisioner::System.new(@system)
+    @provisioner = Souffle::Provisioner::System.new(@system, @provider)
   end
   
 end

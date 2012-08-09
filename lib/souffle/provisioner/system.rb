@@ -3,7 +3,7 @@ require 'state_machine'
 # The system provisioning statemachine.
 class Souffle::Provisioner::System
 
-  state_machine :state, :initial => :uninitialized do
+  state_machine :state, :initial => :initializing do
     after_transition any => :initializing, :do => :create
 
     event :reclaimed do
@@ -34,11 +34,14 @@ class Souffle::Provisioner::System
   end
 
   # Creates a new system 
-  def initialize(system, max_failures=3)
-    super() # NOTE: This is here to initialize state_machine.
+  def initialize(system, provider, max_failures=3)
     @failures = 0
     @system = system
-    initialized
+    @provider = provider
+    @time_used = 0
+    super() # NOTE: This is here to initialize state_machine.
+
+    @provider.setup(self)
   end
 
   # Creates the system from an api or command.

@@ -2,8 +2,9 @@ require 'state_machine'
 
 # The node provisioning statemachine.
 class Souffle::Provisioner::Node
+  attr_accessor :time_used
 
-  state_machine :state, :initial => :uninitialized do
+  state_machine :state, :initial => :initializing do
     after_transition any => :handling_error, :do => :error_handler
     after_transition any => :initializing, :do => :create
     after_transition :creating => :booting, :do => :boot
@@ -14,6 +15,10 @@ class Souffle::Provisioner::Node
     after_transition :installing_mdadm => :formatting_device,
                           :do => :format_device
     after_transition any => :provisioning, :do => :provision
+
+    event :reclaimed do
+      transition any => :creating
+    end
 
     event :initialized do
       transition :initializing => :creating
@@ -27,7 +32,7 @@ class Souffle::Provisioner::Node
       transition :booting => :partitioning_device
     end
 
-    event :partitioning_device do
+    event :partitioned_device do
       transition :partitioning_device => :installing_mdadm
     end
 
@@ -67,54 +72,66 @@ class Souffle::Provisioner::Node
   # @param [ Souffle::Node ] node The node to manage.
   # @param [ Fixnum ] max_failures The maximum number of failures.
   def initialize(node, max_failures=3)
-    super() # NOTE: This is here to initialize state_machine.
+    @time_used = 0
     @node = node
     @max_failures = max_failures
+    super() # NOTE: This is here to initialize state_machine.
+
+    @provider.setup(self)
   end
 
   # Creates the node from an api or command.
   def create
-    Souffle::Log.info "[#{node_tag}: #{node.name}] Creating a new node..."
+    Souffle::Log.info "[#{node_tag}: #{@node.name}] Creating a new node..."
+    @provider.create_node(node)
   end
 
   # Boots up the node and waits for ssh.
   def boot
-    Souffle::Log.info "[#{node_tag}: #{node.name}] Booting node..."
+    Souffle::Log.info "[#{node_tag}: #{@node.name}] Booting node..."
+    @provider.boot(node)
   end
 
   # Installs and sets up mdadm.
   def setup_mdadm
-    Souffle::Log.info "[#{node_tag}: #{node.name}] Setting up mdadm..."
+    Souffle::Log.info "[#{node_tag}: #{@node.name}] Setting up mdadm..."
+    @provider.setup_mdadm(node)
   end
 
   # Partitions the soon to be raid device.
   def partition_device
-    Souffle::Log.info "[#{node_tag}: #{node.name}] Partitioning the device..."
+    Souffle::Log.info "[#{node_tag}: #{@node.name}] Partitioning the device..."
+    @provider.partition(node)
   end
 
   # Formats a device to the configured filesystem.
   def format_device
-    Souffle::Log.info "[#{node_tag}: #{node.name}] Formatting the device..."
+    Souffle::Log.info "[#{node_tag}: #{@node.name}] Formatting the device..."
+    @provider.format_device(node)
   end
 
   # Sets up raid to the configured raid-level.
   def setup_raid
-    Souffle::Log.info "[#{node_tag}: #{node.name}] Setting up raid..."
+    Souffle::Log.info "[#{node_tag}: #{@node.name}] Setting up raid..."
+    @provider.setup_raid(node)
   end
 
   # Provisions the ebs/raid/shares/etc and then starts the chef run.
   def provision
-    Souffle::Log.info "[#{node_tag}: #{node.name}] Provisioning node..."
+    Souffle::Log.info "[#{node_tag}: #{@node.name}] Provisioning node..."
+    @provider.provision(node)
   end
 
   # Kills the node entirely.
   def kill
-    Souffle::Log.info "[#{node_tag}: #{node.name}] Killing node..."
+    Souffle::Log.info "[#{node_tag}: #{@node.name}] Killing node..."
+    @provider.kill(node)
   end
 
   # Kills the node and restarts the creation loop.
   def kill_and_recreate
-    Souffle::Log.info "[#{node_tag}: #{node.name}] Recreating node..."
+    Souffle::Log.info "[#{node_tag}: #{@node.name}] Recreating node..."
+    @provider.kill_and_recreate(node)
   end
 
   private
