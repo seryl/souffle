@@ -69,7 +69,6 @@ describe "Souffle::Provider::AWS" do
   end
 
   it "should be able to launch an ebs volume" do
-    @provider.setup
     system = Souffle::System.new
     node = Souffle::Node.new
 
@@ -78,12 +77,12 @@ describe "Souffle::Provider::AWS" do
     node = Souffle::Node.new
     node.name = "TheBestNameEver"
     node.options[:aws_ebs_size] = 11
+    node.options[:volume_count] = 2
 
-    @provider.create_ebs(node)
-    @provider.create_node(node, @provider.generate_tag("test"))
+    # @provider.create_node(node, @provider.generate_tag("test"))
 
-    sleep 20
-    @provider.attach_ebs(node)
+    # sleep 20
+    # @provider.attach_ebs(node)
 
     # sleep 10
     # require 'pry'

@@ -33,15 +33,17 @@ class Souffle::Provisioner::System
     end
   end
 
-  # Creates a new system 
+  # Creates a new system using a specific provider.
+  # 
+  # @param [ Souffle::System ] system The system to provision.
+  # @param [ Souffle::Provider ] provider The provider to use.
+  # @param [ Fixnum ] max_failures the maximum number of failures.
   def initialize(system, provider, max_failures=3)
     @failures = 0
     @system = system
     @provider = provider
     @time_used = 0
     super() # NOTE: This is here to initialize state_machine.
-
-    @provider.setup(self)
   end
 
   # Creates the system from an api or command.
@@ -49,12 +51,12 @@ class Souffle::Provisioner::System
   # @param [ String ] tag The tag to use for the system.
   def create(tag="souffle")
     Souffle::Log.info "[#{system_tag}] Creating a new system..."
-    @provider.create_system(@system, tag)
+    # @provider.create_system(@system, tag)
   end
 
   # Kills the system.
   def kill_system
-    @provider.kill(@system.nodes)
+    # @provider.kill(@system.nodes)
   end
 
   # Handles the error state and recreates the system

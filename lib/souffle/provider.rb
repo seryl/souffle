@@ -1,30 +1,26 @@
 # The souffle cloud provider class.
 class Souffle::Provider
-  
-  # The setup method for the provider. Intended to be overridden.
+  attr_accessor :system
+
+  # Initialize a new provider for a given system.
   # 
-  # @param [ Souffle::Provisioner ] provisioner The provisioner object.
-  # 
-  # @raise [Souffle::Exceptions::Provider] This definition must be overridden.
-  def setup(provisioner=nil)
-    error_msg = "#{self.class.to_s}: you must override setup"
-    raise Souffle::Exceptions::Provider, error_msg
+  # @param [ Souffle::System ] system The system to provision.
+  def initialize(system=Souffle::System.new)
+    add_helpers(system)
   end
 
   # The name of the given provider. Intended to be overridden.
-  # 
-  # @raise [Souffle::Exceptions::Provider] This definition must be overridden.
-  def name
-    error_msg = "#{self.class.to_s}: you must override name"
-    raise Souffle::Exceptions::Provider, error_msg
-  end
+  def name; "Base"; end
 
   # Extends a node with the current provider's helper functions.
   # 
   # @param [ Souffle::System ] system The system to extend with helpers.
   def add_helpers(system)
-    system.send(:extend, helper(:System))
-    system.nodes.each { |node| node.send(:extend, helper(:Node)) }
+    @system ||= system
+    unless name == "Base"
+      @system.send(:extend, helper(:System))
+      @system.nodes.each { |node| node.send(:extend, helper(:Node)) }
+    end
   end
 
   # Creates a system for a given provider. Intended to be overridden.

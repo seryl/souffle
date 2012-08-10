@@ -7,15 +7,10 @@ class Souffle::Provider::Vagrant < Souffle::Provider
   attr_reader :vagrant_dir
 
   # Setup the internal Vagrant configuration and object.
-  # 
-  # @param [ Souffle::Provisioner ] provisioner The provisioner object.
-  def setup(provisioner=nil)
-    @provisioner = provisioner
-    @vagrant_dir = Souffle::Config[:vagrant_dir]
+  def setup
+    @vagrant_dir = @system.try_opt(:vagrant_dir)
     create_new_vm_group unless current_folder_has_souffle_config?
     generate_vagrant_config
-
-    @provisioner.initialized unless provisioner.nil?
   end
 
   # The name of the given provider.

@@ -8,19 +8,14 @@ class Souffle::Provider::AWS < Souffle::Provider
   attr_reader :access_key, :access_secret
 
   # Setup the internal AWS configuration and object.
-  # 
-  # @param [ Souffle::Provisioner ] system_provisioner The provisioner object.
-  def setup(system_provisioner=nil)
-    @provisioner = provisioner
-    @access_key    = Souffle::Config[:aws_access_key]
-    @access_secret = Souffle::Config[:aws_access_secret]
+  def setup
+    @access_key    = @system.try_opt(:aws_access_key)
+    @access_secret = @system.try_opt(:aws_access_secret)
 
     @ec2 = RightAws::Ec2.new(
       @access_key, @access_secret,
-      :region => Souffle::Config[:aws_region],
+      :region => @system.try_opt(:aws_region),
       :logger => Souffle::Log.logger)
-    
-    @provisioner.initialized unless provisioner.nil?
   end
 
   # The name of the given provider.
@@ -40,8 +35,8 @@ class Souffle::Provider::AWS < Souffle::Provider
   # @param [ Souffle::System ] system The system to instantiate.
   # @param [ String ] tag_prefix The tag prefix to use for the system.
   def create_system(system, tag_prefix="souffle")
-    add_helpers(system)
     system.options[:tag] = generate_tag(tag_prefix)
+    system.provisioner = Souffle::Provisioner::System.new(system, self)
   end
 
   # Takes a list of nodes and returns the list of their aws instance_ids.
@@ -56,29 +51,16 @@ class Souffle::Provider::AWS < Souffle::Provider
   # @param [ Souffle::Node ] node The node to instantiate.
   # @param [ String ] tag The tag to use for the node.
   def create_node(node, tag=nil)
-    opts = Hash.new
-    opts[:instance_type] = node.try_opt(:aws_instance_type)
-    opts[:min_count] = 1
-    opts[:max_count] = 1
-    if using_vpc?(node)
-      opts[:subnet_id] = node.try_opt(:aws_subnet_id)
-      opts[:aws_subnet_id] = node.try_opt(:aws_subnet_id)
-      opts[:aws_vpc_id] = Array(node.try_opt(:aws_vpc_id))
-      opts[:group_ids] = Array(node.try_opt(:group_ids))
-    else
-      opts[:group_names] = node.try_opt(:group_names)
-    end
-    opts[:key_name] = node.try_opt(:key_name)
+    opts = prepare_node_options(node)
     node.options[:tag] = tag unless tag.nil?
 
+    node.provisioner = Souffle::Provisioner::Node.new(node)
     create_ebs(node)
     instance_info = @ec2.launch_instances(
       node.try_opt(:aws_image_id), opts).first
     
     node.options[:aws_instance_id] = instance_info[:aws_instance_id]
     tag_node(node, node.try_opts(:tag))
-
-    @provisioner.created
   end
 
   # Tags a node and it's volumes.
@@ -335,6 +317,28 @@ class Souffle::Provider::AWS < Souffle::Provider
   def ssh_block(node, user="root", pass=nil, opts={})
     n = @ec2.describe_instances(node[:aws_instance_id])
     super(n[:private_ip_address], user, pass, opts)
+  end
+
+  # Prepares the node options using the system or global defaults.
+  # 
+  # @param [ Souffle::Node ] node The node you wish to prepare options for.
+  # 
+  # @reutnr [ Hash ] The options hash to pass into ec2 launch instance.
+  def prepare_node_options(node)
+    opts = Hash.new
+    opts[:instance_type] = node.try_opt(:aws_instance_type)
+    opts[:min_count] = 1
+    opts[:max_count] = 1
+    if using_vpc?(node)
+      opts[:subnet_id] = node.try_opt(:aws_subnet_id)
+      opts[:aws_subnet_id] = node.try_opt(:aws_subnet_id)
+      opts[:aws_vpc_id] = Array(node.try_opt(:aws_vpc_id))
+      opts[:group_ids] = Array(node.try_opt(:group_ids))
+    else
+      opts[:group_names] = node.try_opt(:group_names)
+    end
+    opts[:key_name] = node.try_opt(:key_name)
+    opts
   end
 
   # Takes the volume count in the array and converts it to a device name.
