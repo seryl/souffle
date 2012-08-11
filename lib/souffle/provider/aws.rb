@@ -8,7 +8,8 @@ class Souffle::Provider::AWS < Souffle::Provider
   attr_reader :access_key, :access_secret
 
   # Setup the internal AWS configuration and object.
-  def setup
+  def initialize
+    super()
     @access_key    = @system.try_opt(:aws_access_key)
     @access_secret = @system.try_opt(:aws_access_secret)
 
@@ -37,6 +38,7 @@ class Souffle::Provider::AWS < Souffle::Provider
   def create_system(system, tag_prefix="souffle")
     system.options[:tag] = generate_tag(tag_prefix)
     system.provisioner = Souffle::Provisioner::System.new(system, self)
+    system.provisioner.initialized
   end
 
   # Takes a list of nodes and returns the list of their aws instance_ids.
@@ -56,11 +58,12 @@ class Souffle::Provider::AWS < Souffle::Provider
 
     node.provisioner = Souffle::Provisioner::Node.new(node)
     create_ebs(node)
+    when_ebs_ready(node) { attach_ebs(node) }
     instance_info = @ec2.launch_instances(
       node.try_opt(:aws_image_id), opts).first
     
     node.options[:aws_instance_id] = instance_info[:aws_instance_id]
-    tag_node(node, node.try_opts(:tag))
+    tag_node(node, node.try_opt(:tag))
   end
 
   # Tags a node and it's volumes.
@@ -129,6 +132,10 @@ class Souffle::Provider::AWS < Souffle::Provider
       ssh.exec!(mdadm_string)
       ssh.exec!("sleep 2 && #{export_mdadm}")
     end
+  end
+
+  def boot(node, retries=50)
+    # @ec2.describe(node)
   end
 
   # Formats a device on a given node with the provided filesystem.
@@ -209,12 +216,22 @@ class Souffle::Provider::AWS < Souffle::Provider
     volumes = Array.new
     node.options[:volume_count].times do
       volumes << @ec2.create_volume(
-        node.try_opt(:aws_snapshot_id, ""),
+        node.try_opt(:aws_snapshot_id),
         node.try_opt(:aws_ebs_size),
         node.try_opt(:aws_availability_zone) )
     end
     node.options[:volumes] = volumes
     volumes
+  end
+
+  # 
+  def when_ebs_ready(node)
+    volume_ids = node[:volumes].map { |v| v[:aws_id] }
+    EM.add_periodic_timer(3) do |timer|
+      vol_status = @ec2.describe_volumes(volume_ids)
+      yield if block_given?
+      timer.cancel
+    end
   end
 
   # Attaches ebs volumes to the given node.
@@ -315,8 +332,32 @@ class Souffle::Provider::AWS < Souffle::Provider
   # 
   # @yield [ EventMachine::Ssh::Session ] The ssh session.
   def ssh_block(node, user="root", pass=nil, opts={})
-    n = @ec2.describe_instances(node[:aws_instance_id])
-    super(n[:private_ip_address], user, pass, opts)
+    n = @ec2.describe_instances(node[:aws_instance_id]).first
+    if n.nil?
+      raise AwsInstanceDoesNotExist,
+        "The AWS instance (#{node[:aws_instance_id]}) does not exist."
+    else
+      opts[:keys] = ssh_key(n) if ssh_key_exists?(n)
+      super(n[:private_ip_address], user, pass, opts)
+    end
+  end
+
+  # Grabs an ssh key for a given aws node.
+  # 
+  # @param [ Hash ] The AWS information hash for a given node.
+  # 
+  # @return [ true,false ] Whether or not the ssh_key exists for the node.
+  def ssh_key_exists?(instance_info)
+    super(instance_info[:ssh_key_name])
+  end
+
+  # Returns the path of the ssh_key for a given node.
+  # 
+  # @param [ Hash ] The AWS information hash for a given node.
+  # 
+  # @return [ String ] The path to the ssh_key for the given node.
+  def ssh_key(instance_info)
+    super(instance_info[:ssh_key_name])
   end
 
   # Prepares the node options using the system or global defaults.
