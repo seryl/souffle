@@ -2,20 +2,24 @@ require 'state_machine'
 
 # The system provisioning statemachine.
 class Souffle::Provisioner::System
+  attr_accessor :time_used, :provider
 
   state_machine :state, :initial => :initializing do
+    after_transition any => :handling_error, :do => :error_handler
+    after_transition :initializing => :creating, :do => :create
+    after_transition :creating => :provisioning, :do => :provision
     after_transition any => :initializing, :do => :create
-
-    event :reclaimed do
-      transition any => :creating
-    end
 
     event :initialized do
       transition :initializing => :creating
     end
 
     event :created do
-      transition :creating => :complete
+      transition :creating => :provisioning
+    end
+
+    event :provisioned do
+      transition :provisioning => :complete
     end
 
     event :error_occurred do
@@ -24,6 +28,10 @@ class Souffle::Provisioner::System
 
     event :creation_halted do
       transition any => :failed
+    end
+
+    event :reclaimed do
+      transition any => :initializing
     end
 
     around_transition do |system, transition, block|
@@ -47,11 +55,17 @@ class Souffle::Provisioner::System
   end
 
   # Creates the system from an api or command.
-  # 
-  # @param [ String ] tag The tag to use for the system.
-  def create(tag="souffle")
+  def create
     Souffle::Log.info "[#{system_tag}] Creating a new system..."
-    # @provider.create_system(@system, tag)
+    @system.nodes.each do |node|
+      node.provisioner = Souffle::Provisioner::Node.new(node)
+      node.provisioner.initialized
+    end
+    created
+  end
+
+  # Provisioning the system.
+  def provision
   end
 
   # Kills the system.
