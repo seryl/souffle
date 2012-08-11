@@ -70,14 +70,26 @@ describe "Souffle::Provider::AWS" do
 
   it "should be able to launch an ebs volume" do
     system = Souffle::System.new
-    node = Souffle::Node.new
 
-    system.add(node)
-    @provider.create_system(system)
-    node = Souffle::Node.new
-    node.name = "TheBestNameEver"
-    node.options[:aws_ebs_size] = 11
-    node.options[:volume_count] = 2
+    masternode = Souffle::Node.new
+    masternode.name = "MasterNode"
+    masternode.options[:aws_ebs_size] = 12
+    masternode.options[:volume_count] = 2
+
+    # child_node1 = Souffle::Node.new
+    # child_node1.name = "child node 1"
+    # child_node1.options[:aws_ebs_size] = 11
+    # child_node1.options[:volume_count] = 2
+
+    # child_node2 = Souffle::Node.new
+    # child_node2.name = "child node 2"
+    # child_node2.options[:aws_ebs_size] = 9
+    # child_node2.options[:volume_count] = 2
+
+    # system.add(masternode)
+    # system.add(child_node1)
+    # system.add(child_node2)
+    # @provider.create_system(system)
 
     # @provider.create_node(node, @provider.generate_tag("test"))
 
@@ -94,10 +106,6 @@ describe "Souffle::Provider::AWS" do
   #   node.name = "TheBestNameEver"
   #   node.options[:aws_ebs_size] = 11
   #   node.options[:volume_count] = 2
-  #   require 'pry'
-
-  #   @provider.setup
-  #   binding.pry
 
   #   # @provider.create_ebs(node)
   #   # @provider.create_node(node, "example_tag")
