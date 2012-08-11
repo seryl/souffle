@@ -7,7 +7,8 @@ class Souffle::Provider::Vagrant < Souffle::Provider
   attr_reader :vagrant_dir
 
   # Setup the internal Vagrant configuration and object.
-  def setup
+  def initialize
+    super()
     @vagrant_dir = @system.try_opt(:vagrant_dir)
     create_new_vm_group unless current_folder_has_souffle_config?
     generate_vagrant_config
@@ -19,13 +20,15 @@ class Souffle::Provider::Vagrant < Souffle::Provider
   # Creates a system using vagrant as the provider.
   # 
   # @param [ Souffle::System ] system The system to instantiate.
-  def create_system(system)
+  # @param [ String ] tag_prefix The tag prefix to use for the system.
+  def create_system(system, tag_prefix=nil)
   end
 
   # Takes a node definition and begins the provisioning process.
   # 
   # @param [ Souffle::Node ] node The node to instantiate.
-  def create_node(node)
+  # @param [ String ] tag The tag to use for the node.
+  def create_node(node, tag=nil)
   end
 
   # Noop.
