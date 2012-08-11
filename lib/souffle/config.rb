@@ -63,6 +63,9 @@ class Souffle::Config
     end
   end
 
+  # Configuration Settings
+  config_file "/etc/souffle/souffle.rb"
+
   # Logging Settings
   log_level :info
   log_location STDOUT
