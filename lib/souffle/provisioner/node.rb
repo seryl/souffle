@@ -6,6 +6,7 @@ class Souffle::Provisioner::Node
 
   state_machine :state, :initial => :initializing do
     after_transition any => :handling_error, :do => :error_handler
+    after_transition :initializing => :creating, :do => :create
     after_transition any => :initializing, :do => :create
     after_transition :creating => :booting, :do => :boot
     after_transition :booting => :partitioning_device,
@@ -45,7 +46,7 @@ class Souffle::Provisioner::Node
     end
 
     event :raid_initialized do
-      transition :initializing_raid => :provisioning
+      transition :initializing_raid => :ready_to_provision
     end
 
     event :provisioned do
@@ -81,55 +82,56 @@ class Souffle::Provisioner::Node
   # Creates the node from an api or command.
   def create
     Souffle::Log.info "[#{node_tag}: #{@node.name}] Creating a new node..."
-    provider.create_node(node)
+    provider.create_node(@node)
   end
 
   # Boots up the node and waits for ssh.
   def boot
     Souffle::Log.info "[#{node_tag}: #{@node.name}] Booting node..."
-    provider.boot(node)
+    @node.system.provider
+    provider.boot(@node)
   end
 
   # Installs and sets up mdadm.
   def setup_mdadm
     Souffle::Log.info "[#{node_tag}: #{@node.name}] Setting up mdadm..."
-    provider.setup_mdadm(node)
+    provider.setup_mdadm(@node)
   end
 
   # Partitions the soon to be raid device.
   def partition_device
     Souffle::Log.info "[#{node_tag}: #{@node.name}] Partitioning the device..."
-    provider.partition(node)
+    provider.partition(@node)
   end
 
   # Formats a device to the configured filesystem.
   def format_device
     Souffle::Log.info "[#{node_tag}: #{@node.name}] Formatting the device..."
-    provider.format_device(node)
+    provider.format_device(@node)
   end
 
   # Sets up raid to the configured raid-level.
   def setup_raid
     Souffle::Log.info "[#{node_tag}: #{@node.name}] Setting up raid..."
-    provider.setup_raid(node)
+    provider.setup_raid(@node)
   end
 
   # Provisions the ebs/raid/shares/etc and then starts the chef run.
   def provision
     Souffle::Log.info "[#{node_tag}: #{@node.name}] Provisioning node..."
-    provider.provision(node)
+    provider.provision(@node)
   end
 
   # Kills the node entirely.
   def kill
     Souffle::Log.info "[#{node_tag}: #{@node.name}] Killing node..."
-    provider.kill(node)
+    provider.kill(@node)
   end
 
   # Kills the node and restarts the creation loop.
   def kill_and_recreate
     Souffle::Log.info "[#{node_tag}: #{@node.name}] Recreating node..."
-    provider.kill_and_recreate(node)
+    provider.kill_and_recreate(@node)
   end
 
   private
@@ -142,9 +144,7 @@ class Souffle::Provisioner::Node
   end
 
   # Helper function for the node's system provider.
-  # 
-  # @param 
   def provider
-    node.system.provider
+    @node.system.provisioner.provider
   end
 end
