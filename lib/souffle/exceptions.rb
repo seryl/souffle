@@ -21,4 +21,10 @@ class Souffle::Exceptions
 
   # The system hash must have a nodes key with a list of nodes.
   class InvalidSystemHash < RuntimeError; end
+
+  # The souffle ssh directory must have writable permissions.
+  class PermissionErrorSshKeys < RuntimeError; end
+
+  # The AWS Instance searched for does not exist.
+  class AwsInstanceDoesNotExist < RuntimeError; end
 end
