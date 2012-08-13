@@ -70,6 +70,43 @@ class Souffle::Provider
     Souffle::Provider::Helpers.const_get(name).const_get(mod)
   end
 
+  # Waits for ssh to be accessible for a node for the initial connection and
+  # yields an ssh object to manage the commands naturally from there.
+  # 
+  # @param [ String ] address The address of the machine to connect to.
+  # @param [ String ] user The user to connect as.
+  # @param [ String, NilClass ] pass By default publickey and password auth
+  # will be attempted.
+  # @param [ Hash ] opts The options hash.
+  # @param [ Fixnum ] timeout The timeout for ssh boot.
+  # @option opts [ Hash ] :net_ssh Options to pass to Net::SSH,
+  # see Net::SSH.start
+  # @option opts [ Hash ] :timeout (TIMEOUT) default timeout for all #wait_for
+  # and #send_wait calls.
+  # @option opts [ Boolean ] :reconnect When disconnected reconnect.
+  # 
+  # @yield [ Eventmachine::Ssh:Session ] The ssh session.
+  def wait_for_boot(address, user="root", pass=nil, opts={},
+                    timeout=200)
+    Souffle::Log.info "Waiting for ssh for #{address}..."
+    timer = EM::PeriodicTimer.new(EM::Ssh::Connection::TIMEOUT) do
+      opts[:password] = pass unless pass.nil?
+      opts[:paranoid] = false
+      EM::Ssh.start(address, user, opts) do |connection|
+        connection.errback  { |err| nil }
+        connection.callback do |ssh|
+          yield(ssh) if block_given?
+          ssh.close
+        end
+      end
+    end
+
+    EM::Timer.new(timeout) do
+      Souffle::Log.error "SSH Boot timeout for #{address}..."
+      timer.cancel
+    end
+  end
+
   # Yields an ssh object to manage the commands naturally from there.
   # 
   # @param [ String ] address The address of the machine to connect to.
@@ -85,11 +122,13 @@ class Souffle::Provider
   # 
   # @yield [ EventMachine::Ssh::Session ] The ssh session.
   def ssh_block(address, user="root", pass=nil, opts={})
-    EM::Ssh.start(address, user, pass, opts) do |connection|
+    opts[:password] = pass unless pass.nil?
+    opts[:paranoid] = false
+    EM::Ssh.start(address, user, opts) do |connection|
       connection.errback do |err|
         Souffle::Log.error "SSH Error: #{err} (#{err.class})"
       end
-      connection.callback { |ssh| yield(ssh); ssh.close }
+      connection.callback { |ssh| yield(ssh) if block_given?; ssh.close }
     end
   end
 

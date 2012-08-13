@@ -81,67 +81,60 @@ class Souffle::Provisioner::Node
 
   # Creates the node from an api or command.
   def create
-    Souffle::Log.info "[#{node_tag}: #{@node.name}] Creating a new node..."
+    Souffle::Log.info "#{@node.log_prefix} Creating a new node..."
     provider.create_node(@node)
   end
 
   # Boots up the node and waits for ssh.
   def boot
-    Souffle::Log.info "[#{node_tag}: #{@node.name}] Booting node..."
+    Souffle::Log.info "#{@node.log_prefix} Booting node..."
     @node.system.provider
     provider.boot(@node)
   end
 
   # Installs and sets up mdadm.
   def setup_mdadm
-    Souffle::Log.info "[#{node_tag}: #{@node.name}] Setting up mdadm..."
+    Souffle::Log.info "#{@node.log_prefix} Setting up mdadm..."
     provider.setup_mdadm(@node)
   end
 
   # Partitions the soon to be raid device.
   def partition_device
-    Souffle::Log.info "[#{node_tag}: #{@node.name}] Partitioning the device..."
+    Souffle::Log.info "#{@node.log_prefix} Partitioning the device..."
     provider.partition(@node)
   end
 
   # Formats a device to the configured filesystem.
   def format_device
-    Souffle::Log.info "[#{node_tag}: #{@node.name}] Formatting the device..."
+    Souffle::Log.info "#{@node.log_prefix} Formatting the device..."
     provider.format_device(@node)
   end
 
   # Sets up raid to the configured raid-level.
   def setup_raid
-    Souffle::Log.info "[#{node_tag}: #{@node.name}] Setting up raid..."
+    Souffle::Log.info "#{@node.log_prefix} Setting up raid..."
     provider.setup_raid(@node)
   end
 
   # Provisions the ebs/raid/shares/etc and then starts the chef run.
   def provision
-    Souffle::Log.info "[#{node_tag}: #{@node.name}] Provisioning node..."
+    Souffle::Log.info "#{@node.log_prefix} Provisioning node..."
     provider.provision(@node)
   end
 
   # Kills the node entirely.
   def kill
-    Souffle::Log.info "[#{node_tag}: #{@node.name}] Killing node..."
+    Souffle::Log.info "#{@node.log_prefix} Killing node..."
     provider.kill(@node)
   end
 
   # Kills the node and restarts the creation loop.
   def kill_and_recreate
-    Souffle::Log.info "[#{node_tag}: #{@node.name}] Recreating node..."
+    Souffle::Log.info "#{@node.log_prefix} Recreating node..."
     provider.kill_and_recreate(@node)
   end
 
   private
-
-  # Helper_function for the node's tag.
-  # 
-  # @return [ String ] The node, system, or global tag.
-  def node_tag
-    @node.try_opt(:tag)
-  end
 
   # Helper function for the node's system provider.
   def provider

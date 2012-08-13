@@ -58,12 +58,17 @@ class Souffle::Provider::AWS < Souffle::Provider
 
     node.provisioner = Souffle::Provisioner::Node.new(node)
     create_ebs(node)
-    when_ebs_ready(node) { attach_ebs(node) }
     instance_info = @ec2.launch_instances(
       node.try_opt(:aws_image_id), opts).first
     
     node.options[:aws_instance_id] = instance_info[:aws_instance_id]
     tag_node(node, node.try_opt(:tag))
+
+    when_node_running(node) do
+      when_ebs_ready(node) do
+        wait_for_boot(node)
+      end
+    end
   end
 
   # Tags a node and it's volumes.
@@ -130,7 +135,7 @@ class Souffle::Provider::AWS < Souffle::Provider
 
     ssh_cmd(node) do |ssh|
       ssh.exec!(mdadm_string)
-      ssh.exec!("sleep 2 && #{export_mdadm}")
+      ssh.exec!(export_mdadm)
     end
   end
 
@@ -171,8 +176,8 @@ class Souffle::Provider::AWS < Souffle::Provider
   def setup_lvm(node)
     ssh_cmd(node) do |ssh|
       ssh.exec!("pvcreate /dev/md0p1")
-      ssh.exec!("sleep 1 && vgcreate VolGroup00 /dev/md0p1")
-      ssh.exec!("sleep 2 && lvcreate -l 100%vg VolGroup00 -n data")
+      ssh.exec!("vgcreate VolGroup00 /dev/md0p1")
+      ssh.exec!("lvcreate -l 100%vg VolGroup00 -n data")
     end
   end
 
@@ -224,13 +229,64 @@ class Souffle::Provider::AWS < Souffle::Provider
     volumes
   end
 
+  # Polls the EC2 instance information until it is in the running state.
   # 
-  def when_ebs_ready(node)
-    volume_ids = node[:volumes].map { |v| v[:aws_id] }
-    EM.add_periodic_timer(3) do |timer|
+  # @param [ Souffle::Node ] node The node to wait until running on.
+  # @param [ Fixnum ] timeout The maximum number of seconds to wait.
+  # @param [ Fixnum ] period The interval in seconds to poll EC2.
+  def when_node_running(node, timeout=200, period=3)
+    Souffle::Log.info "#{node.log_prefix} Waiting for node to be running..."
+    node_running = false
+
+    timer = EM.add_periodic_timer(period) do
+      instance = @ec2.describe_instances(node.options[:aws_instance_id]).first
+      if instance[:aws_state].downcase == "running"
+        node_running = true
+        timer.cancel
+        yield if block_given?
+      end
+    end
+
+    t_out = EM::Timer.new(timeout) do
+      unless node_running
+        error_msg =  node.log_prefix
+        error_msg << " Wait for node running timeout..."
+        Souffle::Log.error error_msg
+        node.provisioner.error_occurred
+        timer.cancel
+      end
+    end
+  end
+
+  # Polls the EBS volume status until they're ready then runs the given block.
+  # 
+  # @param [ Souffle::Node ] node The node to wait for EBS on.
+  # @param [ Fixnum ] timeout The maximum number of seconds to wait for ebs.
+  # @param [ Fixnum ] period The interval in seconds to poll EC2.
+  # 
+  # @yield The block to run after ebs is created.
+  def when_ebs_ready(node, timeout=200, period=3)
+    Souffle::Log.info "#{node.log_prefix} Waiting for EBS to be ready..."
+    ebs_ready = false
+    volume_ids = node.options[:volumes].map { |v| v[:aws_id] }
+    timer = EM.add_periodic_timer(period) do
       vol_status = @ec2.describe_volumes(volume_ids)
-      yield if block_given?
-      timer.cancel
+      avail = Array(vol_status).select { |v| v[:aws_status] == "available" }
+      if avail.size == vol_status.size
+        attach_ebs(node)
+        timer.cancel
+        yield if block_given?
+      end
+    end
+
+    t_out = EM::Timer.new(timeout) do
+      unless ebs_ready
+        error_msg =  node.log_prefix
+        error_msg << "Waiting for EBS Timed out..."
+        Souffle::Log.error error_msg
+        node.provisioner.error_occurred
+        timer.cancel
+      end
     end
   end
 
@@ -238,11 +294,12 @@ class Souffle::Provider::AWS < Souffle::Provider
   # 
   # @param [ Souffle::Node ] node The node to attach ebs volumes onto.
   def attach_ebs(node)
+    Souffle::Log.info "#{node.log_prefix} Attaching EBS..."
     node.options[:volumes].each_with_index do |volume, index|
       @ec2.attach_volume(
         volume[:aws_id],
         node.options[:aws_instance_id],
-        volume_id_to_device(index) )
+        volume_id_to_aws_device(index) )
     end
   end
 
@@ -263,7 +320,7 @@ class Souffle::Provider::AWS < Souffle::Provider
       @ec2.detach_volume(
         volume[:aws_id],
         node.options[:aws_instance_id],
-        volume_id_to_device(index),
+        volume_id_to_aws_device(index),
         force)
     end
   end
@@ -317,6 +374,55 @@ class Souffle::Provider::AWS < Souffle::Provider
 
   private
 
+  # Waits for ssh to be accessible for a node for the initial connection and
+  # yields an ssh object to manage the commands naturally from there.
+  # 
+  # @param [ Souffle::Node ] node The node to run commands against.
+  # @param [ String ] user The user to connect as.
+  # @param [ String, NilClass ] pass By default publickey and password auth
+  # will be attempted.
+  # @param [ Hash ] opts The options hash.
+  # @param [ Fixnum ] timeout The time to wait before timing out.
+  # @option opts [ Hash ] :net_ssh Options to pass to Net::SSH,
+  # see Net::SSH.start
+  # @option opts [ Hash ] :timeout (TIMEOUT) default timeout for all #wait_for
+  # and #send_wait calls.
+  # @option opts [ Boolean ] :reconnect When disconnected reconnect.
+  # 
+  # @yield [ Eventmachine::Ssh:Session ] The ssh session.
+  def wait_for_boot(node, user="root", pass=nil, opts={},
+                    timeout=200)
+    n = @ec2.describe_instances(node.options[:aws_instance_id]).first
+    if n.nil?
+      raise AwsInstanceDoesNotExist,
+        "The AWS instance (#{node.options[:aws_instance_id]}) does not exist."
+    else
+      key = n[:ssh_key_name]
+      opts[:keys] = ssh_key(key) if ssh_key_exists?(key)
+      opts[:password] = pass unless pass.nil?
+      opts[:paranoid] = false
+      address = n[:private_ip_address]
+      Souffle::Log.info "#{node.log_prefix} Waiting for ssh..."
+      timer = EM::PeriodicTimer.new(EM::Ssh::Connection::TIMEOUT) do
+        EM::Ssh.start(address, user, opts) do |connection|
+          connection.errback  { |err| nil }
+          connection.callback do |ssh|
+            node.provisioner.booted
+            Souffle::Log.info "#{node.log_prefix} Node Booted."
+            yield(ssh) if block_given?
+            ssh.close
+          end
+        end
+      end
+
+      EM::Timer.new(timeout) do
+        Souffle::Log.error "#{node.log_prefix} SSH Boot timeout..."
+        node.provisioner.error_occurred
+        timer.cancel
+      end
+    end
+  end
+
   # Yields an ssh object to manage the commands naturally from there.
   # 
   # @param [ Souffle::Node ] node The node to run commands against.
@@ -335,29 +441,12 @@ class Souffle::Provider::AWS < Souffle::Provider
     n = @ec2.describe_instances(node[:aws_instance_id]).first
     if n.nil?
       raise AwsInstanceDoesNotExist,
-        "The AWS instance (#{node[:aws_instance_id]}) does not exist."
+        "The AWS instance (#{node.options[:aws_instance_id]}) does not exist."
     else
-      opts[:keys] = ssh_key(n) if ssh_key_exists?(n)
+      key = n[:ssh_key_name]
+      opts[:keys] = ssh_key(key) if ssh_key_exists?(key)
       super(n[:private_ip_address], user, pass, opts)
     end
-  end
-
-  # Grabs an ssh key for a given aws node.
-  # 
-  # @param [ Hash ] The AWS information hash for a given node.
-  # 
-  # @return [ true,false ] Whether or not the ssh_key exists for the node.
-  def ssh_key_exists?(instance_info)
-    super(instance_info[:ssh_key_name])
-  end
-
-  # Returns the path of the ssh_key for a given node.
-  # 
-  # @param [ Hash ] The AWS information hash for a given node.
-  # 
-  # @return [ String ] The path to the ssh_key for the given node.
-  def ssh_key(instance_info)
-    super(instance_info[:ssh_key_name])
   end
 
   # Prepares the node options using the system or global defaults.
@@ -395,6 +484,21 @@ class Souffle::Provider::AWS < Souffle::Provider
       volume_id += 1
     end
     "/dev/xvd#{(volume_id + "a".ord).chr}"
+  end
+
+  # Takes the volume count in the array and converts it to a device name.
+  # 
+  # @note This starts at /dev/xvda and goes to /dev/xvdb, etc.
+  # And due to the special case on AWS, skips /dev/xvde.
+  # 
+  # @param [ Fixnum ] volume_id The count in the array for the volume id.
+  # 
+  # @return [ String ] The device string to mount to.
+  def volume_id_to_aws_device(volume_id)
+    if volume_id >= 4
+      volume_id += 1
+    end
+    "/dev/hd#{(volume_id + "a".ord).chr}"
   end
 
   # Chooses the appropriate formatter for the given filesystem.

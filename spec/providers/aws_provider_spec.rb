@@ -5,6 +5,8 @@ describe "Souffle::Provider::AWS" do
   
   before(:each) do
     get_config
+    Souffle::Log.init($stdout)
+    Souffle::Log.level(:info)
     @provider = Souffle::Provider::AWS.new
   end
 
@@ -69,36 +71,42 @@ describe "Souffle::Provider::AWS" do
   end
 
   it "should be able to launch an ebs volume" do
-    system = Souffle::System.new
+    EM.run do
+      system = Souffle::System.new
 
-    masternode = Souffle::Node.new
-    masternode.name = "MasterNode"
-    masternode.options[:aws_ebs_size] = 12
-    masternode.options[:volume_count] = 2
+      masternode = Souffle::Node.new
+      masternode.name = "MasterNode"
+      masternode.options[:aws_ebs_size] = 1
+      masternode.options[:volume_count] = 2
 
-    # child_node1 = Souffle::Node.new
-    # child_node1.name = "child node 1"
-    # child_node1.options[:aws_ebs_size] = 11
-    # child_node1.options[:volume_count] = 2
+      child_node1 = Souffle::Node.new
+      child_node1.name = "child node 1"
+      child_node1.options[:aws_ebs_size] = 2
+      child_node1.options[:volume_count] = 2
 
-    # child_node2 = Souffle::Node.new
-    # child_node2.name = "child node 2"
-    # child_node2.options[:aws_ebs_size] = 9
-    # child_node2.options[:volume_count] = 2
+      child_node2 = Souffle::Node.new
+      child_node2.name = "child node 2"
+      child_node2.options[:aws_ebs_size] = 3
+      child_node2.options[:volume_count] = 2
 
-    # system.add(masternode)
-    # system.add(child_node1)
-    # system.add(child_node2)
-    # @provider.create_system(system)
+      system.add(masternode)
+      # system.add(child_node1)
+      # system.add(child_node2)
+      @provider.create_system(system)
 
-    # @provider.create_node(node, @provider.generate_tag("test"))
+      EM::Timer.new(200) do
+        EM.stop
+      end
 
-    # sleep 20
-    # @provider.attach_ebs(node)
+      # @provider.create_node(node, @provider.generate_tag("test"))
 
-    # sleep 10
-    # require 'pry'
-    # binding.pry
+      # sleep 20
+      # @provider.attach_ebs(node)
+
+      # sleep 10
+      # require 'pry'
+      # binding.pry
+    end
   end
 
   # it "should be able to launch a node" do

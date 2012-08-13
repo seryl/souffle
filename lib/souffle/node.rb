@@ -96,4 +96,11 @@ class Souffle::Node
   rescue
     nil
   end
+
+  # The logging prefix for the given node.
+  # 
+  # @return [ String ] The logging prefix for the given node.
+  def log_prefix
+    "[#{try_opt(:tag)}: #{name}]"
+  end
 end
