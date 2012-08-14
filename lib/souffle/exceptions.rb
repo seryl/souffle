@@ -27,4 +27,7 @@ class Souffle::Exceptions
 
   # The AWS Instance searched for does not exist.
   class AwsInstanceDoesNotExist < RuntimeError; end
+
+  # The AWS Keys are invalid.
+  class InvalidAwsKeys < RuntimeError; end
 end

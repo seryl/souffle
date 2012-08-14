@@ -43,11 +43,13 @@ class Souffle::Provisioner
   # 
   # @param [ String ] provider The system provider to use for provisioning.
   def initialize_provider(provider=nil)
-    provider = cleanup_provider(Souffle::Config[:provider]) if provider.nil?
-    Souffle::Provider.const_get(provider).new
-  rescue
+    prv = cleanup_provider(Souffle::Config[:provider])
+    Souffle::Provider.const_get(prv).new
+  rescue Souffle::Exceptions::InvalidAwsKeys => e
+    Souffle::Log.error "#{e.message}:\n#{e.backtrace.join("\n")}"
+  rescue Exception
     raise Souffle::Exceptions::InvalidProvider,
-      "The provider Souffle::Provider::#{provider} does not exist."
+      "The provider Souffle::Provider::#{prv} does not exist."
   end
 
   # Starts the provisioning process keeping a local lookup to the provisioner.

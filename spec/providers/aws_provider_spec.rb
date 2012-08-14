@@ -98,14 +98,14 @@ describe "Souffle::Provider::AWS" do
         EM.stop
       end
 
-      # @provider.create_node(node, @provider.generate_tag("test"))
+  #     # @provider.create_node(node, @provider.generate_tag("test"))
 
-      # sleep 20
-      # @provider.attach_ebs(node)
+  #     # sleep 20
+  #     # @provider.attach_ebs(node)
 
-      # sleep 10
-      # require 'pry'
-      # binding.pry
+  #     # sleep 10
+  #     # require 'pry'
+  #     # binding.pry
     end
   end
 

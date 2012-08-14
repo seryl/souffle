@@ -1,4 +1,3 @@
-require 'souffle/provider'
 require 'souffle/template'
 require 'ostruct'
 

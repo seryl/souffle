@@ -6,15 +6,18 @@ class Souffle::Provisioner::Node
 
   state_machine :state, :initial => :initializing do
     after_transition any => :handling_error, :do => :error_handler
-    after_transition :initializing => :creating, :do => :create
-    after_transition any => :initializing, :do => :create
+    after_transition any => :creating, :do => :create
     after_transition :creating => :booting, :do => :boot
     after_transition :booting => :partitioning_device,
                           :do => :partition_device
-    after_transition :partitioning_device => :setup_mdadm,
-                          :do => :install_mdadm
-    after_transition :installing_mdadm => :formatting_device,
+    after_transition :partitioning_device => :installing_mdadm,
+                          :do => :setup_mdadm
+    after_transition :installing_mdadm => :initializing_raid,
+                          :do => :setup_raid
+    after_transition :initializing_raid => :formatting_device,
                           :do => :format_device
+    after_transition :formatting_device => :ready_to_provision,
+                          :do => :ready
     after_transition any => :provisioning, :do => :provision
 
     event :reclaimed do
@@ -38,15 +41,15 @@ class Souffle::Provisioner::Node
     end
 
     event :mdadm_installed do
-      transition :installing_mdadm => :formatting_device
-    end
-
-    event :device_formatted do
-      transition :formatting_device => :initializing_raid
+      transition :installing_mdadm => :initializing_raid
     end
 
     event :raid_initialized do
-      transition :initializing_raid => :ready_to_provision
+      transition :initializing_raid => :formatting_device
+    end
+
+    event :device_formatted do
+      transition :formatting_device => :ready_to_provision
     end
 
     event :provisioned do
@@ -88,7 +91,6 @@ class Souffle::Provisioner::Node
   # Boots up the node and waits for ssh.
   def boot
     Souffle::Log.info "#{@node.log_prefix} Booting node..."
-    @node.system.provider
     provider.boot(@node)
   end
 
@@ -114,6 +116,11 @@ class Souffle::Provisioner::Node
   def setup_raid
     Souffle::Log.info "#{@node.log_prefix} Setting up raid..."
     provider.setup_raid(@node)
+  end
+
+  # Notify the logger when the node is ready for provisioning.
+  def ready
+    Souffle::Log.info "#{@node.log_prefix} Is ready for provisioning..."
   end
 
   # Provisions the ebs/raid/shares/etc and then starts the chef run.

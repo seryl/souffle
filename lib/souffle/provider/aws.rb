@@ -1,4 +1,3 @@
-require 'souffle/provider'
 require 'souffle/provider/aws/helper'
 require 'right_aws'
 require 'securerandom'
@@ -17,6 +16,9 @@ class Souffle::Provider::AWS < Souffle::Provider
       @access_key, @access_secret,
       :region => @system.try_opt(:aws_region),
       :logger => Souffle::Log.logger)
+    rescue
+      raise Souffle::Exceptions::InvalidAwsKeys,
+            "AWS access keys are required to operate on EC2"
   end
 
   # The name of the given provider.
@@ -56,7 +58,6 @@ class Souffle::Provider::AWS < Souffle::Provider
     opts = prepare_node_options(node)
     node.options[:tag] = tag unless tag.nil?
 
-    node.provisioner = Souffle::Provisioner::Node.new(node)
     create_ebs(node)
     instance_info = @ec2.launch_instances(
       node.try_opt(:aws_image_id), opts).first
@@ -64,11 +65,7 @@ class Souffle::Provider::AWS < Souffle::Provider
     node.options[:aws_instance_id] = instance_info[:aws_instance_id]
     tag_node(node, node.try_opt(:tag))
 
-    when_node_running(node) do
-      when_ebs_ready(node) do
-        wait_for_boot(node)
-      end
-    end
+    wait_until_node_running(node)
   end
 
   # Tags a node and it's volumes.
@@ -133,14 +130,27 @@ class Souffle::Provider::AWS < Souffle::Provider
 
     export_mdadm = "/sbin/mdadm --detail --scan > /etc/mdadm.conf"
 
-    ssh_cmd(node) do |ssh|
+    ssh_block(node) do |ssh|
       ssh.exec!(mdadm_string)
       ssh.exec!(export_mdadm)
+      yield if block_given?
     end
   end
 
-  def boot(node, retries=50)
-    # @ec2.describe(node)
+  # Wait for the machine to boot up.
+  # 
+  # @parameter [ Souffle::Node ] The node to boot up.
+  def boot(node)
+    wait_for_boot(node)
+  end
+
+  # Formats all of the devices on a given node for the provisioner interface.
+  # 
+  # @param [ Souffle::Node ] node The node to format it's new partitions.
+  def format_device(node)
+    partition_device(node, "/dev/md0", "8e") do
+      _format_device(node, "/dev/md0p1")
+    end
   end
 
   # Formats a device on a given node with the provided filesystem.
@@ -148,9 +158,41 @@ class Souffle::Provider::AWS < Souffle::Provider
   # @param [ Souffle::Node ] node The node to format a device on.
   # @param [ String ] device The device to format.
   # @param [ String ] filesystem The filesystem to use when formatting.
-  def format_device(node, device, filesystem="ext4")
-    ssh_cmd(node) do |ssh|
+  def _format_device(node, device, filesystem="ext4")
+    return if node.options[:volumes].nil?
+    setup_lvm(node)
+    ssh_block(node) do |ssh|
       ssh.exec!("#{fs_formatter(filesystem)} #{device}")
+      mount_lvm(node) { node.provisioner.device_formatted }
+    end
+  end
+
+  # Partition each of the volumes with raid for the node.
+  # 
+  # @param [ Souffle::Node ] node The node to partition the volumes on.
+  # @param [ Fixnum ] timeout The timeout in seconds before failing.
+  def partition(node, timeout=60)
+    partitions = 0
+    node.options[:volumes].each_with_index do |volume, index|
+      partition_device(node, volume_id_to_device(index)) do |count|
+        partitions += count
+      end
+    end
+    timer = EM.add_periodic_timer(2) do
+      if partitions == node.options[:volumes].size
+        timer.cancel
+        node.provisioner.partitioned_device
+      end
+    end
+
+    EM::Timer.new(timeout) do
+      unless partitions == node.options[:volumes].size
+        error_msg =  node.log_prefix
+        error_msg << " Timeout during partitioning..."
+        Souffle::Log.error error_msg
+        timer.cancel
+        node.provisioner.error_occurred
+      end
     end
   end
 
@@ -162,19 +204,20 @@ class Souffle::Provider::AWS < Souffle::Provider
   # @param [ String ] device The device to partition.
   # @param [ String ] partition_type The type of partition to create.
   def partition_device(node, device, partition_type="fd")
-    ssh_cmd(node) do |ssh|
-      ssh.exec!("""/sbin/sfdisk #{device} << EOF
-      ,,#{partition_type}
-      EOF""")
+    partition_cmd =  "echo \",,#{partition_type}\""
+    partition_cmd << "| /sbin/sfdisk #{device}"
+    ssh_block(node) do |ssh|
+      ssh.exec!("#{partition_cmd}")
+      yield(1) if block_given?
     end
-    @provisioner.partitioned_device
   end
 
   # Sets up the lvm partition for the raid devices.
   # 
   # @param [ Souffle::Node ] node The node to setup lvm on.
   def setup_lvm(node)
-    ssh_cmd(node) do |ssh|
+    return if node.options[:volumes].nil?
+    ssh_block(node) do |ssh|
       ssh.exec!("pvcreate /dev/md0p1")
       ssh.exec!("vgcreate VolGroup00 /dev/md0p1")
       ssh.exec!("lvcreate -l 100%vg VolGroup00 -n data")
@@ -185,15 +228,17 @@ class Souffle::Provider::AWS < Souffle::Provider
   # 
   # @param [ Souffle::Node ] node The node to mount lvm on.
   def mount_lvm(node)
-    fstab_str =  "LABEL=data      /data"
+    fstab_str =  "/dev/md0p1      /data"
     fstab_str << "     ext4    noatime,nodiratime  1  1"
 
     mount_str =  "mount -o rw,noatime,nodiratime"
     mount_str << " /dev/mapper/VolGroup00-data /data"
-    ssh_cmd(node) do |ssh|
+    ssh_block(node) do |ssh|
       ssh.exec!("mkdir /data")
       ssh.exec!(mount_str)
       ssh.exec!("echo #{fstab_str} >> /etc/fstab")
+      ssh.exec!("echo #{fstab_str} >> /etc/mtab")
+      yield if block_given?
     end
   end
 
@@ -201,15 +246,21 @@ class Souffle::Provider::AWS < Souffle::Provider
   # 
   # @param [ Souffle::Node ] node The node to install mdadm on.
   def setup_mdadm(node)
-    ssh_cmd(node) { |ssh| ssh.exec!("/usr/bin/yum install -y mdadm") }
+    ssh_block(node) do |ssh|
+      ssh.exec!("/usr/bin/yum install -y mdadm")
+    end
+    node.provisioner.mdadm_installed
   end
 
   # Sets up software raid for the given node.
   # 
   # @param [ Souffle::Node ] node The node setup raid for.
   def setup_raid(node)
+    volume_list = []
     node.options[:volumes].each_with_index do |volume, index|
+      volume_list << volume_id_to_device(index)
     end
+    create_raid(node, volume_list) { node.provisioner.raid_initialized }
   end
 
   # Creates ebs volumes for the given node.
@@ -234,7 +285,7 @@ class Souffle::Provider::AWS < Souffle::Provider
   # @param [ Souffle::Node ] node The node to wait until running on.
   # @param [ Fixnum ] timeout The maximum number of seconds to wait.
   # @param [ Fixnum ] period The interval in seconds to poll EC2.
-  def when_node_running(node, timeout=200, period=3)
+  def wait_until_node_running(node, timeout=200, period=2)
     Souffle::Log.info "#{node.log_prefix} Waiting for node to be running..."
     node_running = false
 
@@ -243,7 +294,7 @@ class Souffle::Provider::AWS < Souffle::Provider
       if instance[:aws_state].downcase == "running"
         node_running = true
         timer.cancel
-        yield if block_given?
+        wait_until_ebs_ready(node)
       end
     end
 
@@ -263,9 +314,7 @@ class Souffle::Provider::AWS < Souffle::Provider
   # @param [ Souffle::Node ] node The node to wait for EBS on.
   # @param [ Fixnum ] timeout The maximum number of seconds to wait for ebs.
   # @param [ Fixnum ] period The interval in seconds to poll EC2.
-  # 
-  # @yield The block to run after ebs is created.
-  def when_ebs_ready(node, timeout=200, period=3)
+  def wait_until_ebs_ready(node, timeout=200, period=2)
     Souffle::Log.info "#{node.log_prefix} Waiting for EBS to be ready..."
     ebs_ready = false
     volume_ids = node.options[:volumes].map { |v| v[:aws_id] }
@@ -275,7 +324,7 @@ class Souffle::Provider::AWS < Souffle::Provider
       if avail.size == vol_status.size
         attach_ebs(node)
         timer.cancel
-        yield if block_given?
+        node.provisioner.created
       end
     end
 
@@ -393,6 +442,7 @@ class Souffle::Provider::AWS < Souffle::Provider
   def wait_for_boot(node, user="root", pass=nil, opts={},
                     timeout=200)
     n = @ec2.describe_instances(node.options[:aws_instance_id]).first
+    is_booted = false
     if n.nil?
       raise AwsInstanceDoesNotExist,
         "The AWS instance (#{node.options[:aws_instance_id]}) does not exist."
@@ -407,8 +457,9 @@ class Souffle::Provider::AWS < Souffle::Provider
         EM::Ssh.start(address, user, opts) do |connection|
           connection.errback  { |err| nil }
           connection.callback do |ssh|
+            timer.cancel
+            is_booted = true
             node.provisioner.booted
-            Souffle::Log.info "#{node.log_prefix} Node Booted."
             yield(ssh) if block_given?
             ssh.close
           end
@@ -416,9 +467,11 @@ class Souffle::Provider::AWS < Souffle::Provider
       end
 
       EM::Timer.new(timeout) do
-        Souffle::Log.error "#{node.log_prefix} SSH Boot timeout..."
-        node.provisioner.error_occurred
-        timer.cancel
+        unless is_booted
+          Souffle::Log.error "#{node.log_prefix} SSH Boot timeout..."
+          node.provisioner.error_occurred
+          timer.cancel
+        end
       end
     end
   end
@@ -438,7 +491,7 @@ class Souffle::Provider::AWS < Souffle::Provider
   # 
   # @yield [ EventMachine::Ssh::Session ] The ssh session.
   def ssh_block(node, user="root", pass=nil, opts={})
-    n = @ec2.describe_instances(node[:aws_instance_id]).first
+    n = @ec2.describe_instances(node.options[:aws_instance_id]).first
     if n.nil?
       raise AwsInstanceDoesNotExist,
         "The AWS instance (#{node.options[:aws_instance_id]}) does not exist."

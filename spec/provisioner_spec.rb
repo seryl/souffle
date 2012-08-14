@@ -1,7 +1,10 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "Souffle::Provisioner" do
+  include Helpers
+  
   before(:each) do
+    get_config
     Souffle::Config[:provider] = "Vagrant"
     @provisioner = Souffle::Provisioner.new
   end

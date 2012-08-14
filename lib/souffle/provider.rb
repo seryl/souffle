@@ -89,12 +89,14 @@ class Souffle::Provider
   def wait_for_boot(address, user="root", pass=nil, opts={},
                     timeout=200)
     Souffle::Log.info "Waiting for ssh for #{address}..."
+    is_booted = false
     timer = EM::PeriodicTimer.new(EM::Ssh::Connection::TIMEOUT) do
       opts[:password] = pass unless pass.nil?
       opts[:paranoid] = false
       EM::Ssh.start(address, user, opts) do |connection|
         connection.errback  { |err| nil }
         connection.callback do |ssh|
+          is_booted = true
           yield(ssh) if block_given?
           ssh.close
         end
@@ -102,8 +104,10 @@ class Souffle::Provider
     end
 
     EM::Timer.new(timeout) do
-      Souffle::Log.error "SSH Boot timeout for #{address}..."
-      timer.cancel
+      unless is_booted
+        Souffle::Log.error "SSH Boot timeout for #{address}..."
+        timer.cancel
+      end
     end
   end
 
