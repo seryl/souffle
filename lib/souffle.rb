@@ -3,6 +3,7 @@ require 'yajl'
 require 'eventmachine'
 require 'em-ssh'
 
+require 'souffle/version'
 require 'souffle/ssh_monkey'
 require 'souffle/log'
 require 'souffle/exceptions'
