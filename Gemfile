@@ -12,7 +12,7 @@ gem "em-ssh", "~> 0.4.0"
 gem "right_aws", "~> 3.0.4"
 gem "tilt", "~> 1.3.3"
 
-gem "mixlib-cli" ">= 1.2.2"
+gem "mixlib-cli", ">= 1.2.2"
 gem "mixlib-config", ">= 1.1.0"
 gem "mixlib-log", ">= 1.3.0"
 
