@@ -59,7 +59,7 @@ class Souffle::Application::Server < Souffle::Application
     :description => "Port to listen on (default: 8080)",
     :proc => lambda { |p| p.to_i }
 
-  option :rack_host,
+  option :vagrant_dir,
     :short => "-V VAGRANT_DIR",
     :long  => "--vagrant_dir VAGRANT_DIR",
     :description => "The path to the base vagrant vm directory",
