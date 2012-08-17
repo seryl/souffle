@@ -2,7 +2,7 @@ require 'souffle/template'
 require 'ostruct'
 
 # The Vagrant souffle provider.
-class Souffle::Provider::Vagrant < Souffle::Provider
+class Souffle::Provider::Vagrant < Souffle::Provider::Base
   attr_reader :vagrant_dir
 
   # Setup the internal Vagrant configuration and object.
@@ -12,9 +12,6 @@ class Souffle::Provider::Vagrant < Souffle::Provider
     create_new_vm_group unless current_folder_has_souffle_config?
     generate_vagrant_config
   end
-
-  # The name of the given provider.
-  def name; "Vagrant"; end
 
   # Creates a system using vagrant as the provider.
   # 

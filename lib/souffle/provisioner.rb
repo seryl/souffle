@@ -29,14 +29,9 @@ class Souffle::Provisioner
   # 
   # @return [ String ] The cleaned up provider name.
   def cleanup_provider(provider)
-    case provider.downcase
-    when /aws/
-      "AWS"
-    when /vagrant/
-      "Vagrant"
-    else
-      provider
-    end
+    lookups = {}
+    Souffle::Provider.constants.each { |k| lookups[k.to_s.downcase] = k.to_s }
+    lookups.fetch([provider.downcase], provider)
   end
 
   # Sets up the given provider to be used for the creation of a system.

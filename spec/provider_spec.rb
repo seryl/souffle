@@ -1,8 +1,8 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe "Souffle::Provider" do
+describe "Souffle::Provider::Base" do
   before(:each) do
-    @provider = Souffle::Provider.new
+    @provider = Souffle::Provider::Base.new
   end
 
   after(:each) do
@@ -12,33 +12,6 @@ describe "Souffle::Provider" do
   it "should have Base as a default name" do
     @provider.name.should eql("Base")
   end
-
-  # it "should be able to extend a system and it's nodes with helpers" do
-  #   system = Souffle::System.new
-  #   node = Souffle::Node.new
-  #   system.add(node)
-
-  #   class Souffle::Provider::BestWurst < Souffle::Provider
-  #     def name; "BestWurst"; end
-  #   end
-
-  #   module Souffle::Provider::Helpers::BestWurst
-  #     module System
-  #       def added_system; "yes_system"; end
-  #     end
-
-  #     module Node
-  #       def added_node; "yes_node"; end
-  #     end
-  #   end
-
-  #   @provider = Souffle::Provider::BestWurst.new
-
-  #   system.added_system.should eql("yes_system")
-  #   system.nodes.first.added_node.should eql("yes_node")
-  #   Souffle::Provider.send(:remove_const, :BestWurst)
-  #   Souffle::Provider::Helpers.send(:remove_const, :BestWurst)
-  # end
 
   it "should raise errors on non-overridden create_system" do
     n = Souffle::Node.new

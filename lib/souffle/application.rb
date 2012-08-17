@@ -4,11 +4,15 @@ require 'mixlib/cli'
 class Souffle::Application
   include Mixlib::CLI
 
+  # The commands that were left unparsed from parse_options.
+  attr_accessor :commands
+
   # Added a Wakeup exception.
   class Wakeup < Exception; end
 
   # Initialize the application, setting up default handlers.
   def initialize
+    @commands = []
     super
 
     trap("TERM") do

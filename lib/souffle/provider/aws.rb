@@ -1,9 +1,8 @@
-require 'souffle/provider/aws/helper'
 require 'right_aws'
 require 'securerandom'
 
 # The AWS souffle provider.
-class Souffle::Provider::AWS < Souffle::Provider
+class Souffle::Provider::AWS < Souffle::Provider::Base
   attr_reader :access_key, :access_secret
 
   # Setup the internal AWS configuration and object.
@@ -20,9 +19,6 @@ class Souffle::Provider::AWS < Souffle::Provider
       raise Souffle::Exceptions::InvalidAwsKeys,
             "AWS access keys are required to operate on EC2"
   end
-
-  # The name of the given provider.
-  def name; "AWS"; end
 
   # Generates a prefixed unique tag.
   # 

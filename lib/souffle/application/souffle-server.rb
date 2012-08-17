@@ -110,6 +110,7 @@ class Souffle::Application::Server < Souffle::Application
   # Grabs all of the cli parameters and generates the mixlib config object.
   def initialize
     super
+    Souffle::Config.merge!(config)
   end
 
   # Configures the souffle server based on the cli parameters.

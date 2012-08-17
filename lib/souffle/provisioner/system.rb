@@ -44,7 +44,7 @@ class Souffle::Provisioner::System
   # Creates a new system using a specific provider.
   # 
   # @param [ Souffle::System ] system The system to provision.
-  # @param [ Souffle::Provider ] provider The provider to use.
+  # @param [ Souffle::Provider::Base ] provider The provider to use.
   # @param [ Fixnum ] max_failures the maximum number of failures.
   def initialize(system, provider, max_failures=3)
     @failures = 0
