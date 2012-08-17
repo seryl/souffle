@@ -61,7 +61,7 @@ class Souffle::Application
     Souffle::Log.init(Souffle::Config[:log_location])
     if ( Souffle::Config[:log_location] != STDOUT ) && STDOUT.tty? &&
       ( !Souffle::Config[:daemonize] )
-      stdout_loger = Logger.new(STDOUT)
+      stdout_logger = Logger.new(STDOUT)
       STDOUT.sync = true
       stdout_logger = Souffle::Log.logger.formatter
       Souffle::Log.loggers << stdout_logger
