@@ -5,8 +5,6 @@ describe "Souffle::Provider::AWS" do
   
   before(:each) do
     get_config
-    Souffle::Log.init($stdout)
-    Souffle::Log.level(:info)
     @provider = Souffle::Provider::AWS.new
   end
 
@@ -69,8 +67,10 @@ describe "Souffle::Provider::AWS" do
     nodelist = [node1, node2, node3]
     @provider.instance_id_list(nodelist).should eql(["1a", "2b", "3c"])
   end
+end
 
-  it "should be able to launch an ebs volume" do
+describe "Souffle::Provider::AWS (live)", :live => true do
+  it "should be able to launch and provision an entire system" do
     EM.run do
       system = Souffle::System.new
 
@@ -90,36 +90,13 @@ describe "Souffle::Provider::AWS" do
       child_node2.options[:volume_count] = 2
 
       system.add(masternode)
-      # system.add(child_node1)
-      # system.add(child_node2)
+      system.add(child_node1)
+      system.add(child_node2)
       @provider.create_system(system)
 
       EM::Timer.new(200) do
         EM.stop
       end
-
-  #     # @provider.create_node(node, @provider.generate_tag("test"))
-
-  #     # sleep 20
-  #     # @provider.attach_ebs(node)
-
-  #     # sleep 10
-  #     # require 'pry'
-  #     # binding.pry
     end
   end
-
-  # it "should be able to launch a node" do
-  #   node = Souffle::Node.new
-  #   node.name = "TheBestNameEver"
-  #   node.options[:aws_ebs_size] = 11
-  #   node.options[:volume_count] = 2
-
-  #   # @provider.create_ebs(node)
-  #   # @provider.create_node(node, "example_tag")
-
-  #   # p node
-  #   # sleep 20
-  #   # @provider.kill_nodes(node)
-  # end
 end

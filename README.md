@@ -2,6 +2,12 @@
 
 An orchestrator for setting up isolated chef-managed systems.
 
+## A note on tests
+
+In order to avoid painfully silly charges and costs, all of the AWS tests
+that require you to pay (spinning up machines, etc), will only run if you
+have the environment variable `AWS_LIVE` set to `true`.
+
 ## Contributing to souffle
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.

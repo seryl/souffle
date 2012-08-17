@@ -28,7 +28,9 @@ require 'souffle'
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 RSpec.configure do |config|
-
+  if ENV['AWS_LIVE'] != "true"
+    config.filter_run_excluding :live => true
+  end
 end
 
 module Helpers
