@@ -46,11 +46,13 @@ class Souffle::Provisioner::System
   # @param [ Souffle::System ] system The system to provision.
   # @param [ Souffle::Provider::Base ] provider The provider to use.
   # @param [ Fixnum ] max_failures the maximum number of failures.
-  def initialize(system, provider, max_failures=3)
+  # @param [ Fixnum ] timeout The maximum time to wait for node creation.
+  def initialize(system, provider, max_failures=3, timeout=500)
     @failures = 0
     @system = system
     @provider = provider
     @time_used = 0
+    @timeout = timeout
     super() # NOTE: This is here to initialize state_machine.
   end
 
@@ -61,11 +63,13 @@ class Souffle::Provisioner::System
       node.provisioner = Souffle::Provisioner::Node.new(node)
       node.provisioner.initialized
     end
-    created
+    wait_until_created
   end
 
   # Provisioning the system.
   def provision
+    Souffle::Log.info "[#{system_tag}] Provisioning the system..."
+    @system.rebalance_nodes
   end
 
   # Kills the system.
@@ -96,4 +100,29 @@ class Souffle::Provisioner::System
   def system_tag
     @system.try_opt(:tag)
   end
+
+  # Wait until all of the nodes are ready to be provisioned and then continue.
+  def wait_until_created
+    total_nodes = @system.nodes.size
+    all_created = false
+    timer = EM::PeriodicTimer.new(2) do
+      nodes_ready = @system.nodes.select do |n|
+        n.provisioner.state == "ready_to_provision"
+      end.size
+
+      if nodes_ready == total_nodes
+        all_created = true
+        created
+      end
+    end
+
+    EM::Timer.new(@timeout) do
+      unless all_created
+        Souffle::Log.error "[#{system_tag}] System creation timeout reached."
+        error_occurred
+        timer.cancel
+      end
+    end
+  end
+
 end

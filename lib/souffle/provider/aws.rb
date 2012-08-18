@@ -11,10 +11,16 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     @access_key    = @system.try_opt(:aws_access_key)
     @access_secret = @system.try_opt(:aws_access_secret)
 
+    if Souffle::Config[:debug]
+      logger = Souffle::Log.logger
+    else
+      logger = Logger.new('/dev/null')
+    end
+    
     @ec2 = RightAws::Ec2.new(
       @access_key, @access_secret,
       :region => @system.try_opt(:aws_region),
-      :logger => Souffle::Log.logger)
+      :logger => logger)
     rescue
       raise Souffle::Exceptions::InvalidAwsKeys,
             "AWS access keys are required to operate on EC2"

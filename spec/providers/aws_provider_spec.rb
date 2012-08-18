@@ -70,6 +70,17 @@ describe "Souffle::Provider::AWS" do
 end
 
 describe "Souffle::Provider::AWS (live)", :live => true do
+  include Helpers
+  
+  before(:each) do
+    get_config
+    @provider = Souffle::Provider::AWS.new
+  end
+
+  after(:each) do
+    @provider = nil
+  end
+
   it "should be able to launch and provision an entire system" do
     EM.run do
       system = Souffle::System.new
