@@ -365,7 +365,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # Detaches all ebs volumes from a given node.
   # 
   # @param [ Souffle::Node ] node The node to detach volumes from.
-  # @param [ true,false ] force Whether or not to force the detachment.
+  # @param [ Boolean ] force Whether or not to force the
+  # detachment.
   def detach_ebs(node, force=false)
     node.options[:volumes].each_with_index do |volume, index|
       @ec2.detach_volume(
@@ -388,7 +389,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # Whether or not to use a vpc instance and subnet for provisioning.
   # 
   # @param [ Souffle::Node ] node The node to check vpc information for.
-  # @return [ true,false ] Whether to use a vpc instance and specific subnet.
+  # @return [ Boolean ] Whether to use a vpc instance and
+  # specific subnet.
   def using_vpc?(node)
     !!node.try_opt(:aws_vpc_id) and
     !!node.try_opt(:aws_subnet_id)
@@ -398,7 +400,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ Souffle::Node ] node The node to check vpc information for.
   # 
-  # @return [ true,false ] Whether or not the vpc is setup.
+  # @return [ Boolean ] Whether or not the vpc is setup.
   def vpc_setup?(node)
     vpc_exists? and subnet_exists?
   end
@@ -407,7 +409,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ Souffle::Node ] node The node to check vpc information for.
   # 
-  # @return [ true,false ] Whether or not the vpc exists.
+  # @return [ Boolean ] Whether or not the vpc exists.
   def vpc_exists?(node)
     @ec2.describe_vpcs({:filters =>
       { 'vpc-id' => node.try_opt(:aws_vpc_id) } }).any?
@@ -417,7 +419,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ Souffle::Node ] node The node to check vpc information for.
   # 
-  # @return [ true,false ] Whether or not the subnet exists.
+  # @return [ Boolean ] Whether or not the subnet exists.
   def subnet_exists?(node)
     @ec2.describe_subnets({:filters =>
       { 'subnet-id' => node.try_opt(:aws_subnet_id) } }).any?

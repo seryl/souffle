@@ -35,7 +35,7 @@ class Souffle::Daemon
 
     # Checks if Souffle is running based on the pid_file.
     # 
-    # @return [ true,false ] Whether or not Souffle is running.
+    # @return [ Boolean ] Whether or not Souffle is running.
     def running?
       if pid_from_file.nil?
         false
@@ -60,7 +60,8 @@ class Souffle::Daemon
     
     # Sucks the pid out of pid_file.
     # 
-    # @return [ Fixnum,NilClass ] The PID from pid_file or nil if it doesn't exist.
+    # @return [ Fixnum,NilClass ] The PID from pid_file or nil if it doesn't
+    # exist.
     def pid_from_file
       File.read(pid_file).chomp.to_i
     rescue Errno::ENOENT, Errno::EACCES

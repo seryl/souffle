@@ -135,7 +135,8 @@ module Souffle::Provider
     # 
     # @param [ String ] key_name The name fo the ssh key to lookup.
     # 
-    # @return [ true,false ] Whether or not the ssh_key exists for the node.
+    # @return [ Boolean ] Whether or not the ssh_key exists
+    # for the node.
     def ssh_key_exists?(key_name)
       File.exists? ssh_key(key_name)
     end

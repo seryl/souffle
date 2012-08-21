@@ -32,7 +32,7 @@ class Souffle::Provider::Vagrant < Souffle::Provider::Base
 
   # Checks if the current folder has the souffle configuration object.
   # 
-  # @return [ true,false ] Whether or not we're in a souffle Vagrant project.
+  # @return [ Boolean ] Whether or not we're in a souffle Vagrant project.
   def current_folder_has_souffle_config?
     File.exists? "#{Dir.pwd}/souffle.json"
   end
