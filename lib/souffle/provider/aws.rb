@@ -79,7 +79,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     create_ebs(node)
     instance_info = @ec2.launch_instances(
       node.try_opt(:aws_image_id), opts).first
-    
+
     node.options[:aws_instance_id] = instance_info[:aws_instance_id]
     tag_node(node, node.try_opt(:tag))
 
@@ -370,7 +370,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       @ec2.modify_block_device_delete_on_termination_attribute(
         node.options[:aws_instance_id],
         volume_id_to_aws_device(index),
-        true )
+        node.try_opt(:delete_on_termination) )
     end
   end
 

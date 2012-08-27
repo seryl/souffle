@@ -87,6 +87,7 @@ class Souffle::Config
   aws_access_key ""
   aws_access_secret ""
   aws_region "us-west-1"
+  delete_on_termination true
 
   # Rack Settings
   rack_host "0.0.0.0"
