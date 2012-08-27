@@ -1,6 +1,22 @@
 require 'right_aws'
 require 'securerandom'
 
+# Monkeypatch RightAws to support EBS delete on termination.
+class RightAws::Ec2
+  def modify_block_device_delete_on_termination_attribute(instance_id,
+      device_name, delete_on_termination)
+    request_hash = {'InstanceId' => instance_id}
+    prefix = "BlockDeviceMapping.1"
+    request_hash["#{prefix}.DeviceName"] = device_name
+    request_hash["#{prefix}.Ebs.DeleteOnTermination"] = delete_on_termination
+    link = generate_request('ModifyInstanceAttribute', request_hash)
+    request_info(link, RightAws::RightBoolResponseParser.new(
+      :logger => @logger))
+  rescue Exception
+    on_exception
+  end
+end
+
 # The AWS souffle provider.
 class Souffle::Provider::AWS < Souffle::Provider::Base
   attr_reader :access_key, :access_secret
@@ -351,6 +367,10 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         volume[:aws_id],
         node.options[:aws_instance_id],
         volume_id_to_aws_device(index) )
+      @ec2.modify_block_device_delete_on_termination_attribute(
+        node.options[:aws_instance_id],
+        volume_id_to_aws_device(index),
+        true )
     end
   end
 
