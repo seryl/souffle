@@ -52,6 +52,10 @@ class Souffle::Provisioner::Node
       transition :formatting_device => :ready_to_provision
     end
 
+    event :begin_provision do
+      transition :ready_to_provision => :provisioning
+    end
+
     event :provisioned do
       transition :provisioning => :complete
     end
@@ -123,7 +127,7 @@ class Souffle::Provisioner::Node
     Souffle::Log.info "#{@node.log_prefix} Is ready for provisioning..."
   end
 
-  # Provisions the ebs/raid/shares/etc and then starts the chef run.
+  # Provisions the given node with a chef/chef-solo run.
   def provision
     Souffle::Log.info "#{@node.log_prefix} Provisioning node..."
     provider.provision(@node)
@@ -139,6 +143,11 @@ class Souffle::Provisioner::Node
   def kill_and_recreate
     Souffle::Log.info "#{@node.log_prefix} Recreating node..."
     provider.kill_and_recreate(@node)
+  end
+
+  # Handles any 
+  def error_handler
+    Souffle::Log.info "#{@node.log_prefix} Handling node error..."
   end
 
   private

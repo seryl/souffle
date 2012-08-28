@@ -105,7 +105,7 @@ describe "Souffle::Provider::AWS (live)", :live => true do
       system.add(child_node2)
       @provider.create_system(system)
 
-      EM::Timer.new(200) do
+      EM::Timer.new(300) do
         EM.stop
       end
     end

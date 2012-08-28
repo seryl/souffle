@@ -189,7 +189,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ Souffle::Node ] node The node to partition the volumes on.
   # @param [ Fixnum ] timeout The timeout in seconds before failing.
-  def partition(node, timeout=60)
+  def partition(node, timeout=100)
     partitions = 0
     node.options[:volumes].each_with_index do |volume, index|
       partition_device(node, volume_id_to_device(index)) do |count|
@@ -321,8 +321,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         error_msg =  node.log_prefix
         error_msg << " Wait for node running timeout..."
         Souffle::Log.error error_msg
-        node.provisioner.error_occurred
         timer.cancel
+        node.provisioner.error_occurred
       end
     end
   end
@@ -341,6 +341,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       avail = Array(vol_status).select { |v| v[:aws_status] == "available" }
       if avail.size == vol_status.size
         attach_ebs(node)
+        ebs_ready = true
         timer.cancel
         node.provisioner.created
       end
@@ -351,8 +352,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         error_msg =  node.log_prefix
         error_msg << "Waiting for EBS Timed out..."
         Souffle::Log.error error_msg
-        node.provisioner.error_occurred
         timer.cancel
+        node.provisioner.error_occurred
       end
     end
   end
@@ -445,6 +446,13 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       { 'subnet-id' => node.try_opt(:aws_subnet_id) } }).any?
   end
 
+  # Provisions a node with the chef/chef-solo configuration.
+  # 
+  # @todo Setup the chef/chef-solo tar gzip and ssh connections.
+  def provision(node)
+    node.provisioner.provisioned
+  end
+
   private
 
   # Waits for ssh to be accessible for a node for the initial connection and
@@ -493,8 +501,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       EM::Timer.new(timeout) do
         unless is_booted
           Souffle::Log.error "#{node.log_prefix} SSH Boot timeout..."
-          node.provisioner.error_occurred
           timer.cancel
+          node.provisioner.error_occurred
         end
       end
     end
@@ -530,7 +538,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ Souffle::Node ] node The node you wish to prepare options for.
   # 
-  # @reutnr [ Hash ] The options hash to pass into ec2 launch instance.
+  # @return [ Hash ] The options hash to pass into ec2 launch instance.
   def prepare_node_options(node)
     opts = Hash.new
     opts[:instance_type] = node.try_opt(:aws_instance_type)

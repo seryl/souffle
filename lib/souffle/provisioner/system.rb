@@ -67,9 +67,47 @@ class Souffle::Provisioner::System
   end
 
   # Provisioning the system.
+  # 
+  # @todo We should really have these provisioned with fibers.
   def provision
     Souffle::Log.info "[#{system_tag}] Provisioning the system..."
     @system.rebalance_nodes
+    @system.nodes.each do |node|
+      when_parents_are_complete(node) do
+        node.provisioner.begin_provision
+      end
+    end
+    wait_until_complete
+  end
+
+  # Wait until all of the parent nodes are in a completed state and yield.
+  def when_parents_are_complete(node)
+    total_nodes = node.parents.size
+    if total_nodes == 0
+      yield if block_given?
+      all_complete = true
+    else
+      all_complete = false
+    end
+    timer = EM::PeriodicTimer.new(2) do
+      nodes_complete = node.parents.select do |n|
+        n.provisioner.state == "complete"
+      end.size
+
+      if nodes_complete == total_nodes
+        all_complete = true
+        timer.cancel
+        yield if block_given?
+      end
+    end
+
+    EM::Timer.new(@timeout) do
+      unless all_complete
+        Souffle::Log.error "[#{system_tag}] Parent creation timeout reached."
+        timer.cancel
+        error_occurred
+      end
+    end
   end
 
   # Kills the system.
@@ -78,7 +116,7 @@ class Souffle::Provisioner::System
   end
 
   # Handles the error state and recreates the system
-  def handle_error
+  def error_handler
     @failures += 1
     if @failures >= max_failures
       Souffle::Log.error "[#{system_tag}] Complete failure. Halting Creation."
@@ -112,6 +150,7 @@ class Souffle::Provisioner::System
 
       if nodes_ready == total_nodes
         all_created = true
+        timer.cancel
         created
       end
     end
@@ -119,8 +158,33 @@ class Souffle::Provisioner::System
     EM::Timer.new(@timeout) do
       unless all_created
         Souffle::Log.error "[#{system_tag}] System creation timeout reached."
-        error_occurred
         timer.cancel
+        error_occurred
+      end
+    end
+  end
+
+  # Wait until all of the nodes are provisioned and then continue.
+  def wait_until_complete
+    total_nodes = @system.nodes.size
+    all_complete = false
+    timer = EM::PeriodicTimer.new(2) do
+      nodes_ready = @system.nodes.select do |n|
+        n.provisioner.state == "complete"
+      end.size
+
+      if nodes_ready == total_nodes
+        all_complete = true
+        timer.cancel
+        created
+      end
+    end
+
+    EM::Timer.new(@timeout) do
+      unless all_complete
+        Souffle::Log.error "[#{system_tag}] System provision timeout reached."
+        timer.cancel
+        error_occurred
       end
     end
   end
