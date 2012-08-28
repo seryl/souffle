@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'tmpdir'
 
 module Souffle::Provider
   # The souffle cloud provider class.
@@ -158,6 +159,44 @@ module Souffle::Provider
         Souffle::Config[:config_file]), "ssh", name.downcase)
     end
 
+    # The list of cookbooks and their full paths.
+    # 
+    # @return [ Array ] The list of cookbooks and their full paths.
+    def cookbook_paths
+      Array(Souffle::Config[:chef_cookbook_path]).inject([]) do |_paths, path|
+        Dir.glob("#{File.expand_path(path)}/*").each do |cb|
+          _paths << cb if File.directory? cb
+        end
+        _paths
+      end
+    end
+
+    # Creates a new cookbook tarball for the deployment.
+    # 
+    # @return [ String ] The path to the created tarball.
+    def create_cookbooks_tarball
+      tarball_name = "cookbooks-latest.tar.gz"
+      temp_dir = File.join(Dir.tmpdir, "chef-cookbooks-latest")
+      temp_cookbook_dir = File.join(temp_dir, "cookbooks")
+      tarball_dir = "#{File.dirname(Souffle::Config[:config_file])}/tarballs"
+      tarball_path = File.join(tarball_dir, tarball_name)
+
+      FileUtils.mkdir_p(tarball_dir) unless File.exists?(tarball_dir)
+      FileUtils.mkdir_p(temp_dir) unless File.exists?(temp_dir)
+      FileUtils.mkdir(temp_cookbook_dir) unless File.exists?(temp_cookbook_dir)
+      cookbook_paths.each { |pkg| FileUtils.cp_r(pkg, temp_cookbook_dir) }
+
+      tar_command =  "tar -C #{temp_dir} -czf #{tarball_path} ./cookbooks"
+      if EM.reactor_running?
+        EM::DeferrableChildProcess.open(tar_command) do
+          FileUtils.rm_rf temp_dir
+        end
+      else
+        Kernel.system(tar_command)
+        FileUtils.rm_rf temp_dir
+      end
+      tarball_path
+    end
   end
 end
 
