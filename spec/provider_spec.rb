@@ -27,12 +27,30 @@ describe "Souffle::Provider::Base" do
     lambda { @provider.create_raid }.should raise_error
   end
 
-  it "should have a reasonable default ssh_key_path" do
-    @provider.send(:ssh_key_path).should eql("/etc/souffle/ssh/base")
+  it "should have an ssh_key_path that matches the provider name" do
+    @provider.send(:ssh_key_path).should eql(
+      "/etc/souffle/ssh/#{@provider.name.downcase}")
   end
 
   it "should have a relative ssh key helpers" do
     base_path = "/etc/souffle/ssh/base"
     @provider.send(:ssh_key, "mykey").should eql("#{base_path}/mykey")
+  end
+
+  it "should be able to generate chef-solo json for a node." do
+    node = Souffle::Node.new
+    node.name = "TheBestOne"
+    rlist = [ "recipe[chef_server::rubygems_install]", "role[dns_server]" ]
+    rlist.each { |rl| node.run_list << rl }
+
+    runlist = {
+      "domain" => "souffle",
+      "run_list" => [
+        "recipe[chef_server::rubygems_install]",
+        "role[dns_server]"
+      ]
+    }
+
+    JSON.parse(@provider.generate_chef_json(node)).should eql(runlist)
   end
 end

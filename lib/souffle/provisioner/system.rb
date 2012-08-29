@@ -73,9 +73,7 @@ class Souffle::Provisioner::System
     Souffle::Log.info "[#{system_tag}] Provisioning the system..."
     @system.rebalance_nodes
     @system.nodes.each do |node|
-      when_parents_are_complete(node) do
-        node.provisioner.begin_provision
-      end
+      when_parents_are_complete(node) { node.provisioner.begin_provision }
     end
     wait_until_complete
   end

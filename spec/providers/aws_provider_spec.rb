@@ -87,6 +87,7 @@ describe "Souffle::Provider::AWS (live)", :live => true do
 
       masternode = Souffle::Node.new
       masternode.name = "MasterNode"
+      masternode.run_list << "recipe[git]"
       masternode.options[:aws_ebs_size] = 1
       masternode.options[:volume_count] = 2
 

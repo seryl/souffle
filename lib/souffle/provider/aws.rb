@@ -26,6 +26,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     super()
     @access_key    = @system.try_opt(:aws_access_key)
     @access_secret = @system.try_opt(:aws_access_secret)
+    @newest_cookbooks = create_cookbooks_tarball
 
     if Souffle::Config[:debug]
       logger = Souffle::Log.logger
@@ -81,9 +82,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       node.try_opt(:aws_image_id), opts).first
 
     node.options[:aws_instance_id] = instance_info[:aws_instance_id]
-    tag_node(node, node.try_opt(:tag))
-
-    wait_until_node_running(node)
+    wait_until_node_running(node) { tag_node(node, node.try_opt(:tag)) }
   end
 
   # Tags a node and it's volumes.
@@ -189,7 +188,11 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ Souffle::Node ] node The node to partition the volumes on.
   # @param [ Fixnum ] timeout The timeout in seconds before failing.
-  def partition(node, timeout=100)
+  def partition(node, timeout=30, iteration=0)
+    if iteration == 3
+      node.provisioner.error_occurred
+      return
+    end
     partitions = 0
     node.options[:volumes].each_with_index do |volume, index|
       partition_device(node, volume_id_to_device(index)) do |count|
@@ -209,7 +212,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         error_msg << " Timeout during partitioning..."
         Souffle::Log.error error_msg
         timer.cancel
-        node.provisioner.error_occurred
+        partition(node, timeout, iteration+1)
       end
     end
   end
@@ -312,6 +315,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       if instance[:aws_state].downcase == "running"
         node_running = true
         timer.cancel
+        yield if block_given?
         wait_until_ebs_ready(node)
       end
     end
@@ -450,6 +454,11 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @todo Setup the chef/chef-solo tar gzip and ssh connections.
   def provision(node)
+    if node.try_opt(:chef_provisioner) == :solo
+      provision_chef_solo(node, generate_chef_json(node))
+    else
+      provision_chef_client(node)
+    end
     node.provisioner.provisioned
   end
 
@@ -506,6 +515,44 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         end
       end
     end
+  end
+
+  # Provisions a box using the chef_solo provisioner.
+  # 
+  # @param [ String ] ipaddress The ip address of the node to provision.
+  # @param [ String ] solo_json The chef solo json string to use.
+  def provision_chef_solo(node, solo_json)
+    rsync_file(node, @newest_cookbooks, "/tmp")
+    solo_config =  "node_name \"#{node.name}.souffle\"\n"
+    solo_config << 'cookbook_path "/tmp/cookbooks"'
+    ssh_block(node) do |ssh|
+      ssh.exec!("tar -zxf /tmp/cookbooks-latest.tar.gz -C /tmp")
+      ssh.exec!("echo '#{solo_config}' >/tmp/solo.rb")
+      ssh.exec!("echo '#{solo_json}' >/tmp/solo.json")
+      ssh.exec!("chef-solo -c /tmp/solo.rb -j /tmp/solo.json")
+      rm_files =  "/tmp/cookbooks /tmp/cookbooks-latest.tar.gz"
+      rm_files << " /tmp/solo.rb /tmp/solo.json"
+      ssh.exec!("rm -rf #{rm_files}")
+    end
+  end
+
+  # Provisions a box using the chef_client provisioner.
+  # 
+  # @todo Chef client provisioner needs to be completed.
+  def provision_chef_client(node)
+    ssh_block(node) do |ssh|
+      ssh.exec!("chef-client")
+    end
+  end
+
+  # Rsync's a file to a remote node.
+  # 
+  # @param [ Souffle::Node ] node The node to connect to.
+  # @param [ Souffle::Node ] file The file to rsync.
+  # @param [ Souffle::Node ] path The remote path to rsync.
+  def rsync_file(node, file, path='.')
+    n = @ec2.describe_instances(node.options[:aws_instance_id]).first
+    super(n[:private_ip_address], file, path)
   end
 
   # Yields an ssh object to manage the commands naturally from there.

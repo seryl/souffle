@@ -74,7 +74,9 @@ class Souffle::Config
   log_location STDOUT
 
   # Chef Settings
-  chef_cookbook_path = []
+  chef_cookbook_path []
+  chef_provisioner :solo
+  chef_domain "souffle"
 
   # Provider Settings
   provider "Vagrant"

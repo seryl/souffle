@@ -1,5 +1,6 @@
 $:.unshift File.dirname(__FILE__)
 require 'yajl'
+require 'yajl/json_gem'
 require 'eventmachine'
 require 'em-ssh'
 

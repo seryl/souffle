@@ -63,7 +63,7 @@ class Souffle::Application
       ( !Souffle::Config[:daemonize] )
       stdout_logger = Logger.new(STDOUT)
       STDOUT.sync = true
-      stdout_logger = Souffle::Log.logger.formatter
+      stdout_logger.formatter = Souffle::Log.logger.formatter
       Souffle::Log.loggers << stdout_logger
     end
     Souffle::Log.level = Souffle::Config[:log_level]

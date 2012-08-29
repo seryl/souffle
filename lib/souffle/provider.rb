@@ -55,6 +55,18 @@ module Souffle::Provider
       raise Souffle::Exceptions::Provider, error_msg
     end
 
+    # Generates the json required for chef-solo to run on a node.
+    # 
+    # @param [ Souffle::Node ] node The node to generate chef-solo json for.
+    # 
+    # @return [ String ] The chef-solo json for the particular node.
+    def generate_chef_json(node)
+      json_info = Hash.new
+      json_info[:run_list] = node.run_list
+      json_info[:domain] = "souffle"
+      json_info.to_json
+    end
+
     private
 
     # Waits for ssh to be accessible for a node for the initial connection and
@@ -157,6 +169,23 @@ module Souffle::Provider
     def ssh_key_path
       File.join(File.dirname(
         Souffle::Config[:config_file]), "ssh", name.downcase)
+    end
+
+    # Rsync's a file to a remote node.
+    # 
+    # @param [ String ] ipaddress The ipaddress of the node to connect to.
+    # @param [ String ] file The file to rsync.
+    # @param [ String ] path The remote path to rsync.
+    def rsync_file(ipaddress, file, path='.')
+      ssh_command =  "ssh -o UserKnownHostsFile=/dev/null "
+      ssh_command << "-o StrictHostKeyChecking=no -o LogLevel=quiet"
+      rsync_command =  "rsync -qar -e \"#{ssh_command}\" "
+      rsync_command << "#{file} root@#{ipaddress}:#{path}"
+      if EM.reactor_running?
+        EM.system(rsync_command)
+      else
+        IO.popen(rsync_command)
+      end
     end
 
     # The list of cookbooks and their full paths.
