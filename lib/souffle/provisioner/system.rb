@@ -1,5 +1,7 @@
 require 'state_machine'
 
+require 'souffle/polling_event'
+
 # The system provisioning statemachine.
 class Souffle::Provisioner::System
   attr_accessor :time_used, :provider

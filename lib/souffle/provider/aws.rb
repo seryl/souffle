@@ -1,6 +1,8 @@
 require 'right_aws'
 require 'securerandom'
 
+require 'souffle/polling_event'
+
 # Monkeypatch RightAws to support EBS delete on termination.
 class RightAws::Ec2
   def modify_block_device_delete_on_termination_attribute(instance_id,
@@ -187,32 +189,34 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # Partition each of the volumes with raid for the node.
   # 
   # @param [ Souffle::Node ] node The node to partition the volumes on.
-  # @param [ Fixnum ] timeout The timeout in seconds before failing.
-  def partition(node, timeout=30, iteration=0)
-    if iteration == 3
-      node.provisioner.error_occurred
-      return
-    end
-    partitions = 0
-    node.options[:volumes].each_with_index do |volume, index|
-      partition_device(node, volume_id_to_device(index)) do |count|
-        partitions += count
-      end
-    end
-    timer = EM.add_periodic_timer(2) do
-      if partitions == node.options[:volumes].size
-        timer.cancel
-        node.provisioner.partitioned_device
-      end
-    end
+  def partition(node, iteration=0)
+    return node.provisioner.error_occurred if iteration == 3
+    Souffle::PollingEvent.new(node) do
+      timeout 30
 
-    EM::Timer.new(timeout) do
-      unless partitions == node.options[:volumes].size
+      pre_event do
+        @partitions = 0
+        @provider = node.provisioner.provider
+        node.options[:volumes].each_with_index do |volume, index|
+          @provider.partition_device(
+            node, @provider.volume_id_to_device(index)) do |count|
+            @partitions += count
+          end
+        end
+      end
+
+      event_loop do
+        if @partitions == node.options[:volumes].size
+          event_complete
+          node.provisioner.partitioned_device
+        end
+      end
+
+      error_handler do
         error_msg =  node.log_prefix
         error_msg << " Timeout during partitioning..."
         Souffle::Log.error error_msg
-        timer.cancel
-        partition(node, timeout, iteration+1)
+        @provider.partition(node, timeout, iteration+1)
       end
     end
   end
@@ -461,8 +465,6 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     end
     node.provisioner.provisioned
   end
-
-  private
 
   # Waits for ssh to be accessible for a node for the initial connection and
   # yields an ssh object to manage the commands naturally from there.

@@ -150,8 +150,6 @@ class Souffle::Provisioner::Node
     Souffle::Log.info "#{@node.log_prefix} Handling node error..."
   end
 
-  private
-
   # Helper function for the node's system provider.
   def provider
     @node.system.provisioner.provider
