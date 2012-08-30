@@ -308,11 +308,10 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # Polls the EC2 instance information until it is in the running state.
   # 
   # @param [ Souffle::Node ] node The node to wait until running on.
-  # @param [ Fixnum ] timeout The maximum number of seconds to wait.
-  # @param [ Fixnum ] period The interval in seconds to poll EC2.
+  # @param [ Fixnum ] poll_timeout The maximum number of seconds to wait.
+  # @param [ Fixnum ] poll_interval The interval in seconds to poll EC2.
   def wait_until_node_running(node, poll_timeout=200, poll_interval=2, &blk)
-    ec2 = @ec2
-    Souffle::PollingEvent.new(node) do
+    ec2 = @ec2; Souffle::PollingEvent.new(node) do
       timeout poll_timeout
       interval poll_interval
 
@@ -343,29 +342,31 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # Polls the EBS volume status until they're ready then runs the given block.
   # 
   # @param [ Souffle::Node ] node The node to wait for EBS on.
-  # @param [ Fixnum ] timeout The maximum number of seconds to wait for ebs.
-  # @param [ Fixnum ] period The interval in seconds to poll EC2.
-  def wait_until_ebs_ready(node, timeout=200, period=2)
-    Souffle::Log.info "#{node.log_prefix} Waiting for EBS to be ready..."
-    ebs_ready = false
-    volume_ids = node.options[:volumes].map { |v| v[:aws_id] }
-    timer = EM.add_periodic_timer(period) do
-      vol_status = @ec2.describe_volumes(volume_ids)
-      avail = Array(vol_status).select { |v| v[:aws_status] == "available" }
-      if avail.size == vol_status.size
-        attach_ebs(node)
-        ebs_ready = true
-        timer.cancel
-        node.provisioner.created
-      end
-    end
+  # @param [ Fixnum ] poll_timeout The maximum number of seconds to wait.
+  # @param [ Fixnum ] poll_interval The interval in seconds to poll EC2.
+  def wait_until_ebs_ready(node, poll_timeout=200, poll_interval=2)
+    ec2 = @ec2; Souffle::PollingEvent.new(node) do
+      timeout poll_timeout
+      interval poll_interval
 
-    t_out = EM::Timer.new(timeout) do
-      unless ebs_ready
-        error_msg =  node.log_prefix
-        error_msg << "Waiting for EBS Timed out..."
+      pre_event do
+        Souffle::Log.info "#{node.log_prefix} Waiting for EBS to be ready..."
+        @provider = node.provisioner.provider
+        @volume_ids = node.options[:volumes].map { |v| v[:aws_id] }
+      end
+
+      event_loop do
+        vol_status = ec2.describe_volumes(@volume_ids)
+        avail = Array(vol_status).select { |v| v[:aws_status] == "available" }
+        if avail.size == vol_status.size
+          @provider.attach_ebs(node)
+          node.provisioner.created
+        end
+      end
+
+      error_handler do
+        error_msg = "#{node.log_prefix} Waiting for EBS Timed out..."
         Souffle::Log.error error_msg
-        timer.cancel
         node.provisioner.error_occurred
       end
     end
