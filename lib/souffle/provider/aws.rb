@@ -310,7 +310,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ Souffle::Node ] node The node to wait until running on.
   # @param [ Fixnum ] poll_timeout The maximum number of seconds to wait.
   # @param [ Fixnum ] poll_interval The interval in seconds to poll EC2.
-  def wait_until_node_running(node, poll_timeout=200, poll_interval=2, &blk)
+  def wait_until_node_running(node, poll_timeout=100, poll_interval=2, &blk)
     ec2 = @ec2; Souffle::PollingEvent.new(node) do
       timeout poll_timeout
       interval poll_interval
@@ -326,7 +326,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
           node.options[:aws_instance_id]).first
         if instance[:aws_state].downcase == "running"
           event_complete
-          @blk.call if @blk
+          @blk.call unless @blk.nil?
           @provider.wait_until_ebs_ready(node)
         end
       end
@@ -344,7 +344,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ Souffle::Node ] node The node to wait for EBS on.
   # @param [ Fixnum ] poll_timeout The maximum number of seconds to wait.
   # @param [ Fixnum ] poll_interval The interval in seconds to poll EC2.
-  def wait_until_ebs_ready(node, poll_timeout=200, poll_interval=2)
+  def wait_until_ebs_ready(node, poll_timeout=100, poll_interval=2)
     ec2 = @ec2; Souffle::PollingEvent.new(node) do
       timeout poll_timeout
       interval poll_interval
@@ -480,7 +480,9 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ String, NilClass ] pass By default publickey and password auth
   # will be attempted.
   # @param [ Hash ] opts The options hash.
-  # @param [ Fixnum ] timeout The time to wait before timing out.
+  # @param [ Fixnum ] poll_timeout The maximum number of seconds to wait.
+  # @param [ Fixnum ] iteration The current retry iteration.
+  # 
   # @option opts [ Hash ] :net_ssh Options to pass to Net::SSH,
   # see Net::SSH.start
   # @option opts [ Hash ] :timeout (TIMEOUT) default timeout for all #wait_for
@@ -489,38 +491,46 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @yield [ Eventmachine::Ssh:Session ] The ssh session.
   def wait_for_boot(node, user="root", pass=nil, opts={},
-                    timeout=200)
-    n = @ec2.describe_instances(node.options[:aws_instance_id]).first
-    is_booted = false
-    if n.nil?
-      raise AwsInstanceDoesNotExist,
-        "The AWS instance (#{node.options[:aws_instance_id]}) does not exist."
-    else
-      key = n[:ssh_key_name]
-      opts[:keys] = ssh_key(key) if ssh_key_exists?(key)
-      opts[:password] = pass unless pass.nil?
-      opts[:paranoid] = false
-      address = n[:private_ip_address]
-      Souffle::Log.info "#{node.log_prefix} Waiting for ssh..."
-      timer = EM::PeriodicTimer.new(EM::Ssh::Connection::TIMEOUT) do
-        EM::Ssh.start(address, user, opts) do |connection|
-          connection.errback  { |err| nil }
-          connection.callback do |ssh|
-            timer.cancel
-            is_booted = true
-            node.provisioner.booted
-            yield(ssh) if block_given?
-            ssh.close
+                    poll_timeout=100, iteration=0, &blk)
+    return node.provisioner.error_occurred if iteration == 3
+
+    ec2 = @ec2; Souffle::PollingEvent.new(node) do
+      timeout poll_timeout
+      interval EM::Ssh::Connection::TIMEOUT
+
+      pre_event do
+        Souffle::Log.info "#{node.log_prefix} Waiting for ssh..."
+        @provider = node.provisioner.provider
+        @blk = blk
+      end
+
+      event_loop do
+        n = ec2.describe_instances(node.options[:aws_instance_id]).first
+        unless n.nil?
+          key = n[:ssh_key_name]
+          if @provider.ssh_key_exists?(key)
+            opts[:keys] = @provider.ssh_key(key)
+          end
+          opts[:password] = pass unless pass.nil?
+          opts[:paranoid] = false
+          address = n[:private_ip_address]
+
+          EM::Ssh.start(address, user, opts) do |connection|
+            connection.errback  { |err| nil }
+            connection.callback do |ssh|
+              event_complete
+              node.provisioner.booted
+              @blk.call(ssh) unless @blk.nil?
+              ssh.close
+            end
           end
         end
       end
 
-      EM::Timer.new(timeout) do
-        unless is_booted
-          Souffle::Log.error "#{node.log_prefix} SSH Boot timeout..."
-          timer.cancel
-          node.provisioner.error_occurred
-        end
+      error_handler do
+        Souffle::Log.error "#{node.log_prefix} SSH Boot timeout..."
+        @provider.wait_for_boot(node, user, pass, opts,
+          poll_timeout, iteration+1, &blk)
       end
     end
   end
@@ -540,7 +550,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       ssh.exec!("chef-solo -c /tmp/solo.rb -j /tmp/solo.json")
       rm_files =  "/tmp/cookbooks /tmp/cookbooks-latest.tar.gz"
       rm_files << " /tmp/solo.rb /tmp/solo.json"
-      ssh.exec!("rm -rf #{rm_files}")
+      # ssh.exec!("rm -rf #{rm_files}")
     end
   end
 

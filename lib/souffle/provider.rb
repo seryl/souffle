@@ -67,8 +67,6 @@ module Souffle::Provider
       json_info.to_json
     end
 
-    private
-
     # Waits for ssh to be accessible for a node for the initial connection and
     # yields an ssh object to manage the commands naturally from there.
     # 

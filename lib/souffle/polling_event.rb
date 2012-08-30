@@ -92,7 +92,7 @@ class Souffle::PollingEvent
 
   # Initialize default values for the event.
   def initialize_defaults
-    @timeout       ||= 200
+    @timeout       ||= 100
     @interval      ||= 2
     @pre_event     ||= Proc.new { |state| nil }
     @event_loop    ||= Proc.new { |state| nil }
