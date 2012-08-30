@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'tmpdir'
 
+# A metal provider module (Describes AWS, Softlayer, etc).
 module Souffle::Provider
   # The souffle cloud provider class.
   class Base
