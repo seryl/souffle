@@ -189,6 +189,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # Partition each of the volumes with raid for the node.
   # 
   # @param [ Souffle::Node ] node The node to partition the volumes on.
+  # @param [ Fixnum ] iteration The current retry iteration.
   def partition(node, iteration=0)
     return node.provisioner.error_occurred if iteration == 3
     Souffle::PollingEvent.new(node) do
@@ -213,8 +214,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       end
 
       error_handler do
-        error_msg =  node.log_prefix
-        error_msg << " Timeout during partitioning..."
+        error_msg = "#{node.log_prefix} Timeout during partitioning..."
         Souffle::Log.error error_msg
         @provider.partition(node, timeout, iteration+1)
       end
@@ -310,26 +310,31 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ Souffle::Node ] node The node to wait until running on.
   # @param [ Fixnum ] timeout The maximum number of seconds to wait.
   # @param [ Fixnum ] period The interval in seconds to poll EC2.
-  def wait_until_node_running(node, timeout=200, period=2)
-    Souffle::Log.info "#{node.log_prefix} Waiting for node to be running..."
-    node_running = false
+  def wait_until_node_running(node, poll_timeout=200, poll_interval=2, &blk)
+    ec2 = @ec2
+    Souffle::PollingEvent.new(node) do
+      timeout poll_timeout
+      interval poll_interval
 
-    timer = EM.add_periodic_timer(period) do
-      instance = @ec2.describe_instances(node.options[:aws_instance_id]).first
-      if instance[:aws_state].downcase == "running"
-        node_running = true
-        timer.cancel
-        yield if block_given?
-        wait_until_ebs_ready(node)
+      pre_event do
+        Souffle::Log.info "#{node.log_prefix} Waiting for node running..."
+        @provider = node.provisioner.provider
+        @blk = blk
       end
-    end
 
-    t_out = EM::Timer.new(timeout) do
-      unless node_running
-        error_msg =  node.log_prefix
-        error_msg << " Wait for node running timeout..."
+      event_loop do
+        instance = ec2.describe_instances(
+          node.options[:aws_instance_id]).first
+        if instance[:aws_state].downcase == "running"
+          event_complete
+          @blk.call if @blk
+          @provider.wait_until_ebs_ready(node)
+        end
+      end
+
+      error_handler do
+        error_msg = "#{node.log_prefix} Wait for node running timeout..."
         Souffle::Log.error error_msg
-        timer.cancel
         node.provisioner.error_occurred
       end
     end

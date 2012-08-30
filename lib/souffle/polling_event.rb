@@ -84,6 +84,7 @@ class Souffle::PollingEvent
 
   # Helper for the event block to set notify the 
   def event_complete
+    @event_timer.cancel
     @timeout_timer.cancel
   end
 
