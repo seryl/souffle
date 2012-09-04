@@ -63,9 +63,10 @@ module Souffle::Provider
     # @return [ String ] The chef-solo json for the particular node.
     def generate_chef_json(node)
       json_info = Hash.new
-      json_info[:run_list] = node.run_list
       json_info[:domain] = "souffle"
-      json_info.to_json
+      json_info.merge!(node.options[:attributes])
+      json_info[:run_list] = node.run_list
+      JSON.pretty_generate(json_info)
     end
 
     # Waits for ssh to be accessible for a node for the initial connection and
