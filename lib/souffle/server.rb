@@ -1,5 +1,6 @@
 require 'puma'
 require 'eventmachine'
+require 'em-synchrony'
 require 'souffle/http'
 
 # The souffle server and management daemon.
@@ -12,7 +13,7 @@ class Souffle::Server
   # Runs the server.
   def run
     if Souffle::Config[:server]
-      EM.run do
+      EM.synchrony do
         @app = Rack::Builder.new do
           use Rack::Lint
           use Rack::ShowExceptions
