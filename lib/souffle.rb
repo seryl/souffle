@@ -3,6 +3,7 @@ require 'yajl'
 require 'yajl/json_gem'
 require 'eventmachine'
 require 'em-ssh'
+require 'em-synchrony'
 
 require 'souffle/version'
 require 'souffle/ssh_monkey'
