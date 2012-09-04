@@ -17,7 +17,9 @@ class Souffle::Node
     @run_list = Souffle::Node::RunList.new
     @parents = []
     @children = []
-    @options = {}
+    @options = {
+      :attributes => Hash.new
+    }
     @parent_multiplier = parent_multiplier
   end
 
