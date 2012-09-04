@@ -6,7 +6,7 @@ require 'mixlib/log'
 class Souffle::Log
   extend Mixlib::Log
 
-  # Force initialization of the primary log device (@logger)
+  # Force initialization of the primary log device (@logger).
   init
 
   # Monkeypatch Formatter to allow local show_time updates.
