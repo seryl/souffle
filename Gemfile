@@ -8,9 +8,11 @@ gem "eventmachine", "~> 0.12.10"
 gem "amqp", "~> 0.9.7"
 gem "state_machine", "~> 1.1.2"
 gem "em-ssh", "~> 0.4.0"
+gem "em-synchrony", "~> 0.2.0"
 
 gem "right_aws", "~> 3.0.4"
 gem "tilt", "~> 1.3.3"
+gem "redis", "~> 3.0.1"
 
 gem "mixlib-cli", ">= 1.2.2"
 gem "mixlib-config", ">= 1.1.0"
