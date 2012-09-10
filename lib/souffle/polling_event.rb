@@ -1,3 +1,5 @@
+require 'eventmachine'
+
 # Eventmachine polling event helper.
 class Souffle::PollingEvent
   # The node to run the polling event against.
