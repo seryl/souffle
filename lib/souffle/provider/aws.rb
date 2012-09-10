@@ -100,7 +100,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     @ec2.create_tags(Array(volume_ids), {
       :instance_id => node.options[:aws_instance_id],
       :souffle => tag
-    })
+    }) unless Array(volume_ids).empty?
   end
 
   # Takes a list of nodes an stops the instances.
@@ -216,7 +216,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       error_handler do
         error_msg = "#{node.log_prefix} Timeout during partitioning..."
         Souffle::Log.error error_msg
-        @provider.partition(node, timeout, iteration+1)
+        @provider.partition(node, iteration+1)
       end
     end
   end
@@ -295,7 +295,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @return [ Array ] The list of created ebs volumes.
   def create_ebs(node)
     volumes = Array.new
-    node.options[:volume_count].times do
+    node.options.fetch(:volume_count, 0).times do
       volumes << @ec2.create_volume(
         node.try_opt(:aws_snapshot_id),
         node.try_opt(:aws_ebs_size),
