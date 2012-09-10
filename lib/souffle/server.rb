@@ -1,4 +1,4 @@
-require 'puma'
+require 'thin'
 require 'eventmachine'
 require 'em-synchrony'
 require 'souffle/http'
@@ -20,7 +20,7 @@ class Souffle::Server
           run Rack::Cascade.new([Souffle::Http])
         end.to_app
 
-        Rack::Handler.get(:puma).run(@app, rack_options)
+        Rack::Handler.get(:thin).run(@app, rack_options)
       end
     end
   end
