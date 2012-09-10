@@ -6,6 +6,8 @@ require 'souffle/polling_event'
 class Souffle::Provisioner::System
   attr_accessor :time_used, :provider
 
+  attr_reader :max_failures
+
   state_machine :state, :initial => :initializing do
     after_transition any => :handling_error, :do => :error_handler
     after_transition :initializing => :creating, :do => :create
@@ -55,6 +57,7 @@ class Souffle::Provisioner::System
     @provider = provider
     @time_used = 0
     @timeout = timeout
+    @max_failures = max_failures
     super() # NOTE: This is here to initialize state_machine.
   end
 
@@ -118,7 +121,7 @@ class Souffle::Provisioner::System
   # Handles the error state and recreates the system
   def error_handler
     @failures += 1
-    if @failures >= max_failures
+    if @failures >= @max_failures
       Souffle::Log.error "[#{system_tag}] Complete failure. Halting Creation."
       creation_halted
     else
