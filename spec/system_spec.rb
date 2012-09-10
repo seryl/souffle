@@ -222,10 +222,43 @@ describe "Souffle::System" do
 
     parent = new_sys.nodes.select { |n| n.name == "parent_node" }.first
     parent.children.first.name.should eql("child_node")
-    parent.options.should eql({ :type => "chef-solo" })
-    parent.children.first.options.should eql({ :type => "chef" })
+    parent.options.should eql({ :attributes => {}, :type => "chef-solo" })
+    parent.children.first.options.should eql({
+      :attributes => {}, :type => "chef" })
     
     new_sys.roots.size.should eql(2)
     new_sys.dependent_nodes.size.should eql(1)
+  end
+
+  it "should have the same system in a hash format as it does in dsl" do
+    sys = {
+      :nodes => [
+        { :name => "MasterNode",
+          :run_list => [  "recipe[gem]",
+                          "recipe[git]" ],
+          :options  => {
+            :gem => { :source => "http://gem.test.com" },
+            :aws_ebs_size => 10,
+            :volume_count => 2
+          }
+        }
+      ]
+    }
+
+    sys2 = Souffle::System.new
+    masternode = Souffle::Node.new
+    masternode.name = "MasterNode"
+    masternode.run_list << "recipe[gem]"
+    masternode.run_list << "recipe[git]"
+    masternode.options[:gem] = { :source => "http://gem.test.com" }
+    masternode.options[:aws_ebs_size] = 10
+    masternode.options[:volume_count] = 2
+    sys2.add(masternode)
+
+    new_sys = Souffle::System.from_hash(sys)
+
+    parent = new_sys.nodes.select { |n| n.name == "MasterNode" }.first
+    parent.run_list.should eql(masternode.run_list)
+    parent.options.should eql(masternode.options)
   end
 end
