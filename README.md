@@ -20,7 +20,8 @@ key_name "josh"
 
 ## CLI
 
-The `souffle` command line client can either be run standalone (with a single json provision) or as a webserver. Running the service as a daemon automatically starts the webserver.
+The `souffle` command line client can either be run standalone (with a single json provision) or as a webserver.
+Running the service as a daemon automatically starts the webserver.
 
     Usage: souffle (options)
         -c, --config CONFIG              The configuration file to use
