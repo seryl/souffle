@@ -2,19 +2,7 @@
 
 An orchestrator for describing and building entire systems with [Chef](https://github.com/opscode/chef).
 
-## Supports
-
-* AWS
-* Rackspace (soon)
-* Vagrant (soon)
-
-## A note on tests
-
-In order to avoid painfully silly charges and costs, all of the AWS tests
-that require you to pay (spinning up machines, etc), will only run if you
-have the environment variable `AWS_LIVE` set to `true`.
-
-    AWS_LIVE=true rake
+Currently we only support `AWS`, however we intend to add support for `Vagrant` and `Rackspace` quite soon.
 
 ## Setup
 
@@ -103,6 +91,14 @@ Both the cli and the rest interface use the standard `json` format for defining 
 ### Status
 
 The `status` is returned in full `json` dump of the current system status.
+
+## A note on tests
+
+In order to avoid painfully silly charges and costs, all of the AWS tests
+that require you to pay (spinning up machines, etc), will only run if you
+have the environment variable `AWS_LIVE` set to `true`.
+
+    AWS_LIVE=true rake
 
 ## Contributing to souffle
 
