@@ -10,6 +10,7 @@ Example configuration file (/etc/souffle/souffle.rb):
 
 ```ruby
 rack_environment "production"
+
 aws_access_key "160147B34F7DCE679A6B"
 aws_access_secret "e01a4cb196b092ca8e93a5e66837bb194e86a9b1"
 aws_region "us-west-2"
