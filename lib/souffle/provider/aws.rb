@@ -5,6 +5,11 @@ require 'souffle/polling_event'
 
 # Monkeypatch RightAws to support EBS delete on termination.
 class RightAws::Ec2
+  # Modifies an EBS device delete on termination flag.
+  # 
+  # @param [ String ] instance_id The instance id to associate with the EBS.
+  # @param [ String ] device_name The name of the EBS device.
+  # @param [ Boolean ] delete_on_termination Whether or not to delete on term.
   def modify_block_device_delete_on_termination_attribute(instance_id,
       device_name, delete_on_termination)
     request_hash = {'InstanceId' => instance_id}
