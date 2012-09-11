@@ -114,6 +114,16 @@ class Souffle::System
     nil
   end
 
+  # Returns the description of a system in hash format.
+  # 
+  # @return [ Hash ] The description of a system in hash format.
+  def to_hash
+    {
+      :nodes => @nodes.map { |n| n.to_hash },
+      :options => @options
+    }
+  end
+
   class << self
     # Creates a new system from a given hash.
     # 
@@ -123,6 +133,8 @@ class Souffle::System
       system_hash[:options] ||= {}
 
       sys = Souffle::System.new
+      sys.options = system_hash[:options]
+
       system_hash[:nodes].each do |n|
         n[:options] ||= Hash.new
         
@@ -130,7 +142,7 @@ class Souffle::System
         node.name = n[:name]
         Array(n[:run_list]).each { |rl| node.run_list << rl }
         Array(n[:dependencies]).each { |dep| node.dependencies << dep }
-        node.options = system_hash[:options].merge(n[:options])
+        node.options = n[:options]
         node.options[:attributes] ||= Hash.new
         sys.add(node)
       end

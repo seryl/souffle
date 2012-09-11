@@ -105,4 +105,17 @@ class Souffle::Node
   def log_prefix
     "[#{try_opt(:tag)}: #{name}]"
   end
+
+  # Returns the description of a node in hash format.
+  # 
+  # @return [ Hash ] The description of a node in hash format.
+  def to_hash
+    {
+      :name => @name,
+      :options => @options,
+      :provisioner => @provisioner,
+      :dependencies => @dependencies.to_hash,
+      :run_list => @run_list.to_hash
+    }
+  end
 end

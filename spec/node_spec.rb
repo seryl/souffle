@@ -119,4 +119,24 @@ describe "Souffle::Node" do
     @node.try_opt(:example_passthru).should eql("blehk")
     Souffle::Config.configuration.delete(:example_passthru)
   end
+
+  it "should be able to create a hashed version of a node" do
+    node_hashed = {
+      :name => "testname",
+      :options => {
+        :attributes => {}
+      },
+      :provisioner => :solo,
+      :run_list => ["recipe[chef_server]", "recipe[blehk]"],
+      :dependencies => ["recipe[some_recipe]"]
+    }
+
+    @node.name = "testname"
+    @node.provisioner = :solo
+    @node.run_list << "recipe[chef_server]"
+    @node.run_list << "recipe[blehk]"
+    @node.dependencies << "recipe[some_recipe]"
+
+    @node.to_hash.should eql(node_hashed)
+  end
 end

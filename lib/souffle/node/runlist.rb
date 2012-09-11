@@ -19,4 +19,11 @@ class Souffle::Node::RunList < Array
     super(item)
   end
 
+  # Returns the description of a run_list in hash format.
+  # 
+  # @return [ Hash ] The description of a run_list in hash format.
+  def to_hash
+    map.each { |item| item.to_s }
+  end
+
 end

@@ -223,8 +223,7 @@ describe "Souffle::System" do
     parent = new_sys.nodes.select { |n| n.name == "parent_node" }.first
     parent.children.first.name.should eql("child_node")
     parent.options.should eql({ :attributes => {}, :type => "chef-solo" })
-    parent.children.first.options.should eql({
-      :attributes => {}, :type => "chef" })
+    parent.children.first.options.should eql({ :attributes => {} })
     
     new_sys.roots.size.should eql(2)
     new_sys.dependent_nodes.size.should eql(1)
@@ -260,5 +259,33 @@ describe "Souffle::System" do
     parent = new_sys.nodes.select { |n| n.name == "MasterNode" }.first
     parent.run_list.should eql(masternode.run_list)
     parent.options.should eql(masternode.options)
+  end
+
+  it "should be able to generate a system hash from a working system" do
+    sys = {
+      :options => { :type => "chef" },
+      :nodes => [
+        { :name => "parent_node",
+          :options => { :type => "chef-solo", :attributes => {} },
+          :run_list => ["role[somerole]"],
+          :dependencies => [],
+          :provisioner => nil },
+        { :name => "lone_node",
+          :options => { :attributes => {} },
+          :run_list => ["role[bestone]"],
+          :dependencies => [],
+          :provisioner => nil },
+        { :name => "child_node",
+          :options => { :attributes => {} },
+          :run_list => ["recipe[base]"],
+          :dependencies => ["role[somerole]"],
+          :provisioner => nil }
+      ]
+    }
+
+    new_sys = Souffle::System.from_hash(sys)
+    new_hash = new_sys.to_hash
+    new_hash[:options].should eql(sys[:options])
+    new_hash[:nodes].each { |n| sys[:nodes].include?(n).should eql(true) }
   end
 end
