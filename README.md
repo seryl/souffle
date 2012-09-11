@@ -43,7 +43,7 @@ Running the service as a daemon automatically starts the webserver.
 
 ## Defining a system
 
-As an example system we'll generate two nodes that both are provisioned with `chef-solo`, have 2 `raid0` EBS drives attached and configured with `LVM`.
+As an example system we'll generate two nodes that both are provisioned with `chef-solo`, have 2 10GB `raid0` EBS drives attached and configured with `LVM`.
 
 ```json
 {
