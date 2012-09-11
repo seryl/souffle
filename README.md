@@ -95,6 +95,12 @@ There are two ways to create a new system, you can either create it with the `so
 
 Both the cli and the rest interface use the standard `json` format for [defining systems](https://github.com/seryl/souffle#defining-a-system).
 
+    # Running from the CLI
+    souffle -j /path/to/system.json
+
+    # Using cURL/HTTP
+    curl -H "Content-Type: application/json" -X PUT -T /path/to/system.json http://localhost:8080/create
+
 ### Status
 
 The `status` is returned in full `json` dump of the current system status.
