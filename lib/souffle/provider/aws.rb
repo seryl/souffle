@@ -550,7 +550,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       ssh.exec!("echo '#{solo_json}' >/tmp/solo.json")
       ssh.exec!("chef-solo -c /tmp/solo.rb -j /tmp/solo.json")
       rm_files =  "/tmp/cookbooks /tmp/cookbooks-latest.tar.gz"
-      rm_files << " /tmp/solo.rb /tmp/solo.json"
+      rm_files << " /tmp/solo.rb /tmp/solo.json > /tmp/chef_bootstrap"
       ssh.exec!("rm -rf #{rm_files}")
     end
   end
