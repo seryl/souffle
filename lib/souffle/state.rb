@@ -22,7 +22,7 @@ class Souffle::State
 
     # Stops the state service.
     def stop_service
-      @svc_timer.cancel
+      @svc_timer.cancel if @svc_timer.respond_to?(:cancel)
     end
   end
 end
