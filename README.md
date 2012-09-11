@@ -1,16 +1,18 @@
 # souffle
 
-An orchestrator for describing and building entire systems with chef.
+An orchestrator for describing and building entire systems with [Chef](https://github.com/opscode/chef).
 
-Supports AWS currently, Vagrant and Rackspace coming soon.
+## Supports
+
+* AWS
+* Rackspace (soon)
+* Vagrant (soon)
 
 ## A note on tests
 
 In order to avoid painfully silly charges and costs, all of the AWS tests
 that require you to pay (spinning up machines, etc), will only run if you
 have the environment variable `AWS_LIVE` set to `true`.
-
-Ex:
 
     AWS_LIVE=true rake
 
@@ -24,11 +26,13 @@ Example configuration file (/etc/souffle/souffle.rb):
     aws_region "us-west-2"
     aws_image_id "ami-1d75574f"
     aws_instance_type "c1.medium"
-    aws_key_name "josh"
+    key_name "josh"
 
 ## CLI
 
-    Usage: ./bin/souffle (options)
+The souffle command line client can either be run standalone (with a single json provision) or as a webserver. Running the service as a daemon automatically starts the webserver.
+
+    Usage: souffle (options)
         -c, --config CONFIG              The configuration file to use
         -d, --daemonize                  Run the application as a daemon (forces `-s`)
         -E, --environment                The environment profile to use
@@ -45,6 +49,56 @@ Example configuration file (/etc/souffle/souffle.rb):
         -V, --vagrant_dir VAGRANT_DIR    The path to the base vagrant vm directory
         -v, --version                    Show souffle version
         -h, --help                       Show this message
+
+## Defining a system
+
+As an example system we'll generate two nodes that both are provisioned with `chef-solo`, have 2 `raid0` EBS drives attached and configured with `LVM`.
+
+    {
+      "provider": "aws",
+      "user": "josh",
+      "domain": "mydomain.com",
+      "options": {
+        "type": "chef-solo",
+        "aws_ebs_size": 10,
+        "volume_count": 2
+      },
+      "nodes": [
+        {
+          "name": "example_repo",
+          "options": {
+            "attributes": {
+              "nginx": { "example_attribute": "blehk" }
+            },
+            "run_list": [ "role[nginx_server" ]
+          }
+        },
+        {
+          "name": "example_srv",
+          "options": {
+            "attributes": {
+              "gem": { "source": "http://gem.mydomain.com" }
+            }
+          },
+          "run_list": [ "recipe[yum]", "recipe[gem]", "recipe[git]" ],
+          "depends_on": [ "role[nginx_server]" ]
+        }
+      ]
+    }
+
+## REST Interface
+
+You can start up the rest interface by starting souffle with the `-d` parameter. The webserver supports the following actions: `create`, `version`, `status`. The default path `/` returns the `version`.
+
+### Creating a new system
+
+There are two ways to create a new system, you can either create it with the `souffle` cli, or you can use the rest interface.
+
+Both the cli and the rest interface use the standard `json` format for defining systems.
+
+### Status
+
+The `status` is returned in full json dump of the current system status, whatever that may be.
 
 ## Contributing to souffle
 
