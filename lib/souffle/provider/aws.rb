@@ -158,7 +158,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
 
   # Wait for the machine to boot up.
   # 
-  # @parameter [ Souffle::Node ] The node to boot up.
+  # @param [ Souffle::Node ] node The node to boot up.
   def boot(node)
     wait_for_boot(node)
   end
@@ -538,7 +538,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
 
   # Provisions a box using the chef_solo provisioner.
   # 
-  # @param [ String ] ipaddress The ip address of the node to provision.
+  # @param [ String ] node The node to provision.
   # @param [ String ] solo_json The chef solo json string to use.
   def provision_chef_solo(node, solo_json)
     rsync_file(node, @newest_cookbooks, "/tmp")
@@ -656,7 +656,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ String ] filesystem The filessytem you intend to use.
   # 
-  # @param [ String ] The filesystem formatter.
+  # @return [ String ] The filesystem formatter.
   def fs_formatter(filesystem)
     "mkfs.#{filesystem}"
   end
