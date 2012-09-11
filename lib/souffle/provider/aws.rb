@@ -5,6 +5,7 @@ require 'souffle/polling_event'
 
 # Monkeypatch RightAws to support EBS delete on termination.
 class RightAws::Ec2
+  
   # Modifies an EBS device delete on termination flag.
   # 
   # @param [ String ] instance_id The instance id to associate with the EBS.
