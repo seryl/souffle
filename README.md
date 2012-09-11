@@ -20,13 +20,15 @@ have the environment variable `AWS_LIVE` set to `true`.
 
 Example configuration file (/etc/souffle/souffle.rb):
 
-    rack_environment "production"
-    aws_access_key "160147B34F7DCE679A6B"
-    aws_access_secret "e01a4cb196b092ca8e93a5e66837bb194e86a9b1"
-    aws_region "us-west-2"
-    aws_image_id "ami-1d75574f"
-    aws_instance_type "c1.medium"
-    key_name "josh"
+```ruby
+rack_environment "production"
+aws_access_key "160147B34F7DCE679A6B"
+aws_access_secret "e01a4cb196b092ca8e93a5e66837bb194e86a9b1"
+aws_region "us-west-2"
+aws_image_id "ami-1d75574f"
+aws_instance_type "c1.medium"
+key_name "josh"
+```
 
 ## CLI
 
@@ -54,37 +56,39 @@ The souffle command line client can either be run standalone (with a single json
 
 As an example system we'll generate two nodes that both are provisioned with `chef-solo`, have 2 `raid0` EBS drives attached and configured with `LVM`.
 
+```json
+{
+  "provider": "aws",
+  "user": "josh",
+  "domain": "mydomain.com",
+  "options": {
+    "type": "chef-solo",
+    "aws_ebs_size": 10,
+    "volume_count": 2
+  },
+  "nodes": [
     {
-      "provider": "aws",
-      "user": "josh",
-      "domain": "mydomain.com",
+      "name": "example_repo",
       "options": {
-        "type": "chef-solo",
-        "aws_ebs_size": 10,
-        "volume_count": 2
-      },
-      "nodes": [
-        {
-          "name": "example_repo",
-          "options": {
-            "attributes": {
-              "nginx": { "example_attribute": "blehk" }
-            },
-            "run_list": [ "role[nginx_server" ]
-          }
+        "attributes": {
+          "nginx": { "example_attribute": "blehk" }
         },
-        {
-          "name": "example_srv",
-          "options": {
-            "attributes": {
-              "gem": { "source": "http://gem.mydomain.com" }
-            }
-          },
-          "run_list": [ "recipe[yum]", "recipe[gem]", "recipe[git]" ],
-          "depends_on": [ "role[nginx_server]" ]
+        "run_list": [ "role[nginx_server" ]
+      }
+    },
+    {
+      "name": "example_srv",
+      "options": {
+        "attributes": {
+          "gem": { "source": "http://gem.mydomain.com" }
         }
-      ]
+      },
+      "run_list": [ "recipe[yum]", "recipe[gem]", "recipe[git]" ],
+      "depends_on": [ "role[nginx_server]" ]
     }
+  ]
+}
+```
 
 ## REST Interface
 
