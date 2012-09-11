@@ -32,7 +32,7 @@ key_name "josh"
 
 ## CLI
 
-The souffle command line client can either be run standalone (with a single json provision) or as a webserver. Running the service as a daemon automatically starts the webserver.
+The `souffle` command line client can either be run standalone (with a single json provision) or as a webserver. Running the service as a daemon automatically starts the webserver.
 
     Usage: souffle (options)
         -c, --config CONFIG              The configuration file to use
@@ -92,7 +92,7 @@ As an example system we'll generate two nodes that both are provisioned with `ch
 
 ## REST Interface
 
-You can start up the rest interface by starting souffle with the `-d` parameter. The webserver supports the following actions: `create`, `version`, `status`. The default path `/` returns the `version`.
+You can start up the rest interface by starting `souffle` with the `-d` parameter. The webserver supports the following actions: `create`, `version`, `status`. The default path `/` returns the `version`.
 
 ### Creating a new system
 
@@ -102,7 +102,7 @@ Both the cli and the rest interface use the standard `json` format for defining 
 
 ### Status
 
-The `status` is returned in full json dump of the current system status, whatever that may be.
+The `status` is returned in full `json` dump of the current system status.
 
 ## Contributing to souffle
 
