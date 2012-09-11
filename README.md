@@ -79,6 +79,12 @@ As an example system we'll generate two nodes that both are provisioned with `ch
 }
 ```
 
+### Attributes
+
+Attributes work in a specific-wins merge for the json configuration. If you define a `configuration option`, it's applied unless a `system` level option overrides that, which is in tern applied unless a `node` level option overrides that.
+
+This should be a familiar concept to those of who are using [Chef](https://github.com/opscode/chef). Similar to `environments`, `roles`, and `nodes`.
+
 ## REST Interface
 
 You can start up the rest interface by starting `souffle` with the `-d` parameter. The webserver supports the following actions: `create`, `version`, `status`. The default path `/` returns the `version`.
