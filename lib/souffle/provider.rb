@@ -23,7 +23,7 @@ module Souffle::Provider
     end
 
     # Wait until ssh is available for the node and then connect.
-    def boot(node, retries=50)
+    def boot(node)
     end
 
     # Creates a system for a given provider. Intended to be overridden.
