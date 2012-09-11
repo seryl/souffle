@@ -73,7 +73,7 @@ As an example system we'll generate two nodes that both are provisioned with `ch
         }
       },
       "run_list": [ "recipe[yum]", "recipe[gem]", "recipe[git]" ],
-      "depends_on": [ "role[nginx_server]" ]
+      "dependencies": [ "role[nginx_server]" ]
     }
   ]
 }
