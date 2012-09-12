@@ -226,6 +226,12 @@ module Souffle::Provider
       end
       tarball_path
     end
+
+    class << self
+      # Updates the souffle status with the latest provider information.
+      def update_status; end
+    end
+
   end
 end
 

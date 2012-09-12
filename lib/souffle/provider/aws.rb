@@ -666,4 +666,41 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   def fs_formatter(filesystem)
     "mkfs.#{filesystem}"
   end
+
+  class << self
+    # Updates the souffle status with the latest AWS information.
+    # 
+    # @param [ RightAws::Ec2 ] ec2 The ec2 object to use for the status update.
+    def update_status(ec2=nil)
+      ec2 = get_base_ec2_info if ec2.nil?
+      return if ec2.nil?
+
+      ec2.describe_instances(
+          :filters => { 'tag-key' => "souffle" }).each do |instance|
+        instance[:tags]["souffle"]
+        # TODO: ADD Status update.
+      end
+    end
+
+    # Returns the base (configured) ec2 object for status updates.
+    # 
+    # @return [ RightAws::Ec2 ] The base RightAws Ec2 object.
+    def get_base_ec2_info
+      access_key = Souffle::Config[:aws_access_key]
+      access_secret = Souffle::Config[:aws_access_secret]
+      aws_region = Souffle::Config[:aws_region]
+
+      if Souffle::Config[:debug]
+        logger = Souffle::Log.logger
+      else
+        logger = Logger.new('/dev/null')
+      end
+
+      RightAws::Ec2.new(access_key, access_secret,
+        :region => aws_region, :logger => logger)
+    rescue
+      nil
+    end
+  end
+
 end
