@@ -1,6 +1,7 @@
 # Changelog
 
-##  v0.0.1
+
+###  v0.0.1
 
 * Application framework laid out
 * Initial node state machine
@@ -14,7 +15,7 @@
 * System rebalancing (pre-provisioning)
 * Added REST API
 
-## v0.0.2
+### v0.0.2
 
 * AWS provider
 * Added EBS support
