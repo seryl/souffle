@@ -86,6 +86,80 @@ Attributes work in a specific-wins merge for the json configuration. If you defi
 
 This should be a familiar concept to those of who are using [Chef](https://github.com/opscode/chef). Similar to `environments`, `roles`, and `nodes`.
 
+#### Example
+
+```json
+{
+  "options": {
+    "aws_ebs_size": 10,
+    "volume_count": 2
+  },
+  "nodes": [
+    {
+      "name": "is_overriden",
+      "options": {
+        "aws_ebs_size":20,
+        "volume_count": 4
+      }
+    },
+    {
+      "name": "not_overridden"
+    },
+    {
+      "name": "count_overridden",
+      "options": {
+        "volume_count": 6
+      }
+    },
+    {
+      "name": "ebs_overridden",
+      "options": {
+        "aws_ebs_size": 50
+      }
+    }
+  ]
+}
+```
+
+With the above system, we'll have four nodes and the default system-wise options:
+
+<table>
+  <tr>
+    <th>Name</th><th>aws_ebs_size</th><th>volume_count</th>
+  </tr>
+  <tr>
+    <td>system (default)</td>
+    <td>10</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>is_overridden</td>
+    <td>20</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>not_overridden</td>
+    <td>10</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>count_overridden</td>
+    <td>10</td>
+    <td>6</td>
+  </tr>
+  <tr>
+    <td>ebs_overridden</td>
+    <td>50</td>
+    <td>2</td>
+  </tr>
+</table>
+
+#### Options
+
+    *Special Cases*
+    The :attributes key is representative of node-specific Chef attributes.
+    The options hash is used to represent provisioner-level options (AWS, Vagrant) with the exception of the attributes key.
+
 ## REST Interface
 
 You can start up the rest interface by starting `souffle` with the `-d` parameter. We do not currently have a web ui, however the webserver supports the following actions: `create`, `version`, `status`. The default path `/` returns the `version`.
@@ -96,8 +170,8 @@ You can start up the rest interface by starting `souffle` with the `-d` paramete
   </tr>
   <tr>
     <td>version</td>
-     <td>/, /version</td>
-     <td>curl -sL http://localhost:8080/</td>
+    <td>/, /version</td>
+    <td>curl -sL http://localhost:8080/</td>
   </tr>
   <tr>
     <td>create</td>
