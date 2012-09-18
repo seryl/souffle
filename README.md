@@ -101,7 +101,7 @@ You can start up the rest interface by starting `souffle` with the `-d` paramete
   </tr>
   <tr>
     <td>create</td>
-    <td>/create`</td>
+    <td>/create</td>
     <td>curl -sL http://localhost:8080/create</td>
   </tr>
   <tr>
