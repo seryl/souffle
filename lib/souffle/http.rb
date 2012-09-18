@@ -38,8 +38,13 @@ class Souffle::Http < Sinatra::Base
     provider = Souffle::Provider::AWS.new
 
     system = Souffle::System.from_hash(data)
-    provider.create_system(system)
+    system_tag = provider.create_system(system)
 
-    { :success => true }.to_json
+    begin
+      { :success => true, :system => system_tag }.to_json
+    rescue Exception => e
+      Souffle::Log.error "#{e.message}:\n#{e.backtrace.join("\n")}"
+      { :success => false }.to_json
+    end
   end
 end

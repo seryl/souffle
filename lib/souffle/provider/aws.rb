@@ -57,17 +57,24 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @return [ String ] The unique tag with prefix.
   def generate_tag(tag_prefix="sys")
-    "#{tag_prefix}-#{SecureRandom.hex(4)}"
+    if tag_prefix
+      "#{tag_prefix}-#{SecureRandom.hex(4)}"
+    else
+      SecureRandom.hex(4)
+    end
   end
 
   # Creates a system using aws as the provider.
   # 
   # @param [ Souffle::System ] system The system to instantiate.
   # @param [ String ] tag_prefix The tag prefix to use for the system.
-  def create_system(system, tag_prefix="souffle")
+  #
+  # @return [ String ] The tag for the created system.
+  def create_system(system, tag_prefix=nil)
     system.options[:tag] = generate_tag(tag_prefix)
     system.provisioner = Souffle::Provisioner::System.new(system, self)
     system.provisioner.initialized
+    system.options[:tag]
   end
 
   # Takes a list of nodes and returns the list of their aws instance_ids.
