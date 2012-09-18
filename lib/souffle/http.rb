@@ -7,7 +7,7 @@ class Souffle::Http < Sinatra::Base
   before { content_type :json }
 
   # Returns the current version of souffle.
-  ['/', 'version'].each do |path|
+  ['/', '/version'].each do |path|
     get path do
       { :name => 'souffle',
         :version => Souffle::VERSION }.to_json
