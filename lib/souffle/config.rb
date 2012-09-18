@@ -75,6 +75,7 @@ class Souffle::Config
 
   # Chef Settings
   chef_cookbook_path []
+  chef_role_path []
   chef_provisioner :solo
   chef_domain "souffle"
 

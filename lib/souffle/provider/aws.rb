@@ -550,13 +550,14 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     rsync_file(node, @newest_cookbooks, "/tmp")
     solo_config =  "node_name \"#{node.name}.souffle\"\n"
     solo_config << 'cookbook_path "/tmp/cookbooks"'
+    solo_config << 'role_path "/tmp/roles"'
     ssh_block(node) do |ssh|
       ssh.exec!("sleep 2; tar -zxf /tmp/cookbooks-latest.tar.gz -C /tmp")
       ssh.exec!("echo '#{solo_config}' >/tmp/solo.rb")
       ssh.exec!("echo '#{solo_json}' >/tmp/solo.json")
       ssh.exec!("chef-solo -c /tmp/solo.rb -j /tmp/solo.json")
-      rm_files =  "/tmp/cookbooks /tmp/cookbooks-latest.tar.gz"
-      rm_files << " /tmp/solo.rb /tmp/solo.json > /tmp/chef_bootstrap"
+      rm_files = %w{ /tmp/cookbooks /tmp/cookbooks-latest.tar.gz
+        /tmp/roles /tmp/solo.rb /tmp/solo.json /tmp/chef_bootstrap }
       ssh.exec!("rm -rf #{rm_files}")
     end
   end

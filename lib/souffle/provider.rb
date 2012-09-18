@@ -200,6 +200,17 @@ module Souffle::Provider
       end
     end
 
+    # The list of roles and their full paths.
+    # 
+    # @return [ Array ] The list of roles and their full paths.
+    def role_paths
+      Array(Souffle::Config[:chef_role_path]).inject([]) do |_paths, path|
+        Dir.glob("#{File.expand_path(path)}/*").each do |role|
+          _path << role if role[-3..-1].eql?(".rb")
+        end
+      end
+    end
+
     # Creates a new cookbook tarball for the deployment.
     # 
     # @return [ String ] The path to the created tarball.
@@ -207,15 +218,19 @@ module Souffle::Provider
       tarball_name = "cookbooks-latest.tar.gz"
       temp_dir = File.join(Dir.tmpdir, "chef-cookbooks-latest")
       temp_cookbook_dir = File.join(temp_dir, "cookbooks")
+      temp_roles_dir = File.join(temp_dir, "roles")
       tarball_dir = "#{File.dirname(Souffle::Config[:config_file])}/tarballs"
       tarball_path = File.join(tarball_dir, tarball_name)
 
       FileUtils.mkdir_p(tarball_dir) unless File.exists?(tarball_dir)
       FileUtils.mkdir_p(temp_dir) unless File.exists?(temp_dir)
       FileUtils.mkdir(temp_cookbook_dir) unless File.exists?(temp_cookbook_dir)
+      FileUtils.mkdir(temp_roles_dir) unless File.exists?(temp_roles_dir)
       cookbook_paths.each { |pkg| FileUtils.cp_r(pkg, temp_cookbook_dir) }
+      role_paths.each { |role| FileUtils.cp(role, temp_roles_dir) }
 
-      tar_command =  "tar -C #{temp_dir} -czf #{tarball_path} ./cookbooks"
+      tar_command =  "tar -C #{temp_dir} -czf #{tarball_path} "
+      tar_command << "./cookbooks ./roles"
       if EM.reactor_running?
         EM::DeferrableChildProcess.open(tar_command) do
           FileUtils.rm_rf temp_dir

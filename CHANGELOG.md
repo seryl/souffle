@@ -34,3 +34,4 @@
 * AWS provider
   * Tags now use `sys` prefix
   * Tags now use `hex(4)` instead of `hex(6)`
+* Added chef roles support to providers
