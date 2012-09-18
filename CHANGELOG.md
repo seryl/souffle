@@ -31,6 +31,7 @@
 
 ### v0.0.3
 
+* Multiple documentation updates
 * AWS provider
   * Tags now use `sys` prefix
   * Tags now use `hex(4)` instead of `hex(6)`
