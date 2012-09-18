@@ -34,6 +34,9 @@
 * Multiple documentation updates
 * AWS provider
   * Tags now use `hex(4)` instead of `hex(6)`
+  * Deprecated default tag prefix
 * Added chef roles support to providers
 * Fixed /version url link
 * Added `tag`, `domain`, and `fqdn` node helpers
+* Bugfix for repo_path
+* Hostname is now set at provisioning
