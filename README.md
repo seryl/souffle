@@ -196,7 +196,7 @@ You can start up the rest interface by starting `souffle` with the `-d` paramete
 
 There are two ways to create a new system, you can either create it with the `souffle` cli, or you can use the rest interface.
 
-Both the cli and the rest interface use the standard `json` format for [defining systems](https://github.com/seryl/souffle#defining-a-system).
+Both the cli and the rest interface use the standard `json` format for [defining systems](#defining-a-system).
 
     # Running from the CLI
     souffle -j /path/to/system.json
