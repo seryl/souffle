@@ -103,7 +103,28 @@ class Souffle::Node
   # 
   # @return [ String ] The logging prefix for the given node.
   def log_prefix
-    "[#{try_opt(:tag)}: #{name}]"
+    "[#{tag}: #{name}]"
+  end
+
+  # The tag for the given node.
+  #
+  # @return [ String ] The tag for the given node.
+  def tag
+    try_opt(:tag)
+  end
+
+  # The top-level domain name for the given node.
+  #
+  # @return [ String ] The top-level domain name for the given node.
+  def domain
+    try_opt(:domain)
+  end
+
+  # The fully qualified domain name for the given node.
+  #
+  # @return [ String ] The fully qualified domain name for the given node.
+  def fqdn
+    [name, tag, domain].compact.join('.')
   end
 
   # Returns the description of a node in hash format.
