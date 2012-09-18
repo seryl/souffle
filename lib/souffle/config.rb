@@ -77,7 +77,9 @@ class Souffle::Config
   chef_cookbook_path []
   chef_role_path []
   chef_provisioner :solo
-  chef_domain "souffle"
+
+  # Domain
+  domain "souffle"
 
   # Provider Settings
   provider "Vagrant"
