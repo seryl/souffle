@@ -68,7 +68,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ Souffle::System ] system The system to instantiate.
   # @param [ String ] tag_prefix The tag prefix to use for the system.
-  #
+  # 
   # @return [ String ] The tag for the created system.
   def create_system(system, tag_prefix=nil)
     system.options[:tag] = generate_tag(tag_prefix)
@@ -551,7 +551,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   end
 
   # Sets the hostname for the given node for the chef run.
-  #
+  # 
   # @param [ Souffle:Node ] node The node to update the hostname for.
   def set_hostname(node)
     local_lookup = "127.0.0.1       #{node.fqdn} #{node.name}\n"
