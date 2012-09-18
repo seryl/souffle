@@ -157,9 +157,10 @@ With the above system, we'll have four nodes and the default system-wide options
 #### Options
 
     **Special Cases**
-
     The `:attributes` key is representative of node-specific Chef attributes.
-    The options hash is used to represent provisioner-level options (AWS, Vagrant) with the exception of the attributes key.
+
+
+The options hash is used to represent provisioner-level options (AWS, Vagrant) with the exception of the attributes key.
 
 ## REST Interface
 
