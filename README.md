@@ -121,7 +121,7 @@ This should be a familiar concept to those of who are using [Chef](https://githu
 }
 ```
 
-With the above system, we'll have four nodes and the default system-wise options:
+With the above system, we'll have four nodes and the default system-wide options:
 
 <table>
   <tr>
@@ -156,8 +156,9 @@ With the above system, we'll have four nodes and the default system-wise options
 
 #### Options
 
-    *Special Cases*
-    The :attributes key is representative of node-specific Chef attributes.
+    **Special Cases**
+
+    The `:attributes` key is representative of node-specific Chef attributes.
     The options hash is used to represent provisioner-level options (AWS, Vagrant) with the exception of the attributes key.
 
 ## REST Interface
