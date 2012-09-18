@@ -22,9 +22,15 @@
   * Added RAID support
   * Added LVM Support
 * Added support for chef-solo provisioning
-* Switched from Puma to Thin
+* Switched from `Puma` to `Thin`
 * Updated REST API
 * Updated command line interface
 * Initial Documentation
 * Optimized AWS polling mechanism
 * Optimized AWS creation ordering
+
+### v0.0.3
+
+* AWS provider
+  * Tags now use `sys` prefix
+  * Tags now use `hex(4)` instead of `hex(6)`

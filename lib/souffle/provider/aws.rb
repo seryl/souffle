@@ -56,8 +56,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ String ] tag_prefix The tag prefix to use.
   # 
   # @return [ String ] The unique tag with prefix.
-  def generate_tag(tag_prefix="souffle")
-    "#{tag_prefix}-#{SecureRandom.hex(6)}"
+  def generate_tag(tag_prefix="sys")
+    "#{tag_prefix}-#{SecureRandom.hex(4)}"
   end
 
   # Creates a system using aws as the provider.
