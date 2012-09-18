@@ -478,6 +478,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @todo Setup the chef/chef-solo tar gzip and ssh connections.
   def provision(node)
+    set_hostname(node)
     if node.try_opt(:chef_provisioner) == :solo
       provision_chef_solo(node, generate_chef_json(node))
     else
@@ -549,14 +550,27 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     end
   end
 
+  # Sets the hostname for the given node for the chef run.
+  #
+  # @param [ Souffle:Node ] node The node to update the hostname for.
+  def set_hostname(node)
+    local_lookup = "127.0.0.1       #{node.fqdn} #{node.name}\n"
+    fqdn = node.fqdn
+    ssh_block(node) do |ssh|
+      ssh.exec!("hostname '#{fqdn}'")
+      ssh.exec!("echo \"#{local_lookup}\" >> /etc/hosts")
+      ssh.exec!("echo \"HOSTNAME=#{fqdn}\" >> /etc/sysconfig/network")
+    end
+  end
+
   # Provisions a box using the chef_solo provisioner.
   # 
   # @param [ String ] node The node to provision.
   # @param [ String ] solo_json The chef solo json string to use.
   def provision_chef_solo(node, solo_json)
     rsync_file(node, @newest_cookbooks, "/tmp")
-    solo_config =  "node_name \"#{node.name}.souffle\"\n"
-    solo_config << 'cookbook_path "/tmp/cookbooks"'
+    solo_config =  "node_name \"#{node.fqdn}\"\n"
+    solo_config << "cookbook_path \"/tmp/cookbooks\"\n"
     solo_config << 'role_path "/tmp/roles"'
     ssh_block(node) do |ssh|
       ssh.exec!("sleep 2; tar -zxf /tmp/cookbooks-latest.tar.gz -C /tmp")
