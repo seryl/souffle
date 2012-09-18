@@ -44,15 +44,15 @@ Running the service as a daemon automatically starts the webserver.
 
 ## Defining a system
 
-As an example system we'll generate two nodes that both are provisioned with `chef-solo`, have 2 10GB `raid0` EBS drives attached and configured with `LVM`.
+As an example system we'll generate two nodes that both are provisioned with `solo`, have 2 10GB `raid0` EBS drives attached and configured with `LVM`.
 
 ```json
 {
   "provider": "aws",
   "user": "josh",
-  "domain": "mydomain.com",
   "options": {
-    "type": "chef-solo",
+    "domain": "mydomain.com",
+    "type": "solo",
     "aws_ebs_size": 10,
     "volume_count": 2
   },
