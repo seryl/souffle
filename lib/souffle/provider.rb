@@ -206,8 +206,9 @@ module Souffle::Provider
     def role_paths
       Array(Souffle::Config[:chef_role_path]).inject([]) do |_paths, path|
         Dir.glob("#{File.expand_path(path)}/*").each do |role|
-          _path << role if role[-3..-1].eql?(".rb")
+          _paths << role if role[-3..-1].eql?(".rb")
         end
+        _paths
       end
     end
 
