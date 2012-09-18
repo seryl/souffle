@@ -18,9 +18,9 @@
 ### v0.0.2
 
 * AWS provider
-* Added EBS support
-* Added RAID support
-* Added LVM Support
+  * Added EBS support
+  * Added RAID support
+  * Added LVM Support
 * Added support for chef-solo provisioning
 * Switched from Puma to Thin
 * Updated REST API
