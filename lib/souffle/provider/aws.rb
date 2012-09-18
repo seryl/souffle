@@ -595,8 +595,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # Rsync's a file to a remote node.
   # 
   # @param [ Souffle::Node ] node The node to connect to.
-  # @param [ Souffle::Node ] file The file to rsync.
-  # @param [ Souffle::Node ] path The remote path to rsync.
+  # @param [ String ] file The file to rsync.
+  # @param [ String ] path The remote path to rsync.
   def rsync_file(node, file, path='.')
     n = @ec2.describe_instances(node.options[:aws_instance_id]).first
     super(n[:private_ip_address], file, path)
