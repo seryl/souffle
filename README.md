@@ -88,7 +88,33 @@ This should be a familiar concept to those of who are using [Chef](https://githu
 
 ## REST Interface
 
-You can start up the rest interface by starting `souffle` with the `-d` parameter. The webserver supports the following actions: `create`, `version`, `status`. The default path `/` returns the `version`.
+You can start up the rest interface by starting `souffle` with the `-d` parameter. We do not currently have a web ui, however the webserver supports the following actions: `create`, `version`, `status`. The default path `/` returns the `version`.
+
+<table>
+  <tr>
+    <th>Command</th><th>Url</th><th>Example</th>
+  </tr>
+  <tr>
+    <td>version</td>
+     <td>/, /version</td>
+     <td>curl -sL http://localhost:8080/</td>
+  </tr>
+  <tr>
+    <td>create</td>
+    <td>/create`</td>
+    <td>curl -sL http://localhost:8080/create</td>
+  </tr>
+  <tr>
+    <td>status (all)</td>
+    <td>/status</td>
+    <td>curl -sL http://localhost:8080/status</td>
+  </tr>
+  <tr>
+    <td>status (specific)</td>
+    <td>/status/<code>system</code></td>
+    <td>curl -sL http://localhost:8080/status/<code>6cbb78b2925a</code></td>
+  </tr>
+</table>
 
 ### Creating a new system
 
