@@ -33,7 +33,7 @@ module Souffle::Provider
     # 
     # @param [ Souffle::System ] system The system to instantiate.
     # @param [ String ] tag The tag to use for the system.
-    def create_system(system, tag="souffle")
+    def create_system(system, tag=nil)
       error_msg = "#{self.class.to_s}: you must override create_system"
       raise Souffle::Exceptions::Provider, error_msg
     end
@@ -63,7 +63,7 @@ module Souffle::Provider
     # @return [ String ] The chef-solo json for the particular node.
     def generate_chef_json(node)
       json_info = Hash.new
-      json_info[:domain] = "souffle"
+      json_info[:domain] = node.try_opt(:domain) || "souffle"
       json_info.merge!(node.options[:attributes])
       json_info[:run_list] = node.run_list
       JSON.pretty_generate(json_info)
