@@ -178,7 +178,7 @@ module Souffle::Provider
     rescue
       error_msg =  "The ssh key directory does not have write permissions: "
       error_msg << ssh_key_path
-      raise PermissionErrorSshKeys, error_msg
+      raise Souffle::Exceptions::PermissionErrorSshKeys, error_msg
     end
 
     # The path to the ssh keys for the provider.
