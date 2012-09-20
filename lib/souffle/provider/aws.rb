@@ -284,9 +284,9 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ Souffle::Node ] node The node to install mdadm on.
   def setup_mdadm(node)
-    ssh_block(node) do |ssh|
+    n = node; ssh_block(node) do |ssh|
       ssh.exec!("/usr/bin/yum install -y mdadm")
-      node.provisioner.mdadm_installed
+      n.provisioner.mdadm_installed
     end
   end
 
@@ -479,7 +479,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @todo Setup the chef/chef-solo tar gzip and ssh connections.
   def provision(node)
     set_hostname(node)
-    if node.try_opt(:chef_provisioner) == :solo
+    if node.try_opt(:chef_provisioner).to_s == "solo"
       provision_chef_solo(node, generate_chef_json(node))
     else
       provision_chef_client(node)
