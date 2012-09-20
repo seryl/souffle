@@ -576,8 +576,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       ssh.exec!("chef-solo -c /tmp/solo.rb -j /tmp/solo.json")
       rm_files = %w{ /tmp/cookbooks /tmp/cookbooks-latest.tar.gz
         /tmp/roles /tmp/solo.rb /tmp/solo.json /tmp/chef_bootstrap }
-      ssh.exec!("rm -rf #{rm_files}")
-      configure_chef_server if n.options[:is_chef_server]
+      ssh.exec!("rm -rf #{rm_files}") unless n.try_opt(:debug)
+      configure_chef_server(ssh, node) if n.options[:is_chef_server]
       n.provisioner.provisioned
     end
   end
@@ -588,7 +588,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     client_cmds << "-j /tmp/client.json "
     client_cmds << "-S #{node.try_opt(:chef_server)} "
     n = node; ssh_block(node) do |ssh|
-      # TODO configure the validation pem for the client
+      write_client_validation_pem(ssh, n)
       write_temp_chef_json(ssh, n)
       ssh.exec!(client_cmds)
       cleanup_temp_chef_files(ssh, n)
@@ -601,8 +601,18 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ EventMachine::Ssh::Connection ] ssh The em-ssh connection.
   # @param [ Souffle::Node ] node The given node to work with.
   def configure_chef_server(ssh, node)
-    # TODO configure the chef server url
-    # TODO configure the system chef validation pem
+    n = @ec2.describe_instances(node.options[:aws_instance_id]).first
+    node.system.options[:chef_server] = "http://#{n[:private_ip_address]}:4000"
+    synchronize_chef(node)
+    validation_pem = ssh.exec!("cat /etc/chef/validation.pem")
+    node.system.options[:chef_validation] = validation_pem
+  end
+
+  # Synchronizes the chef server configuration with the souffle server.
+  #
+  # @param [ Souffle::Node ] node The given node to synchronize to.
+  def synchronize_chef(node)
+    # TODO Synchronize chef server roles, databags, etc.
   end
 
   # Rsync's a file to a remote node.
@@ -755,6 +765,16 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   def cleanup_temp_chef_files(ssh, node)
     ssh.exec!("rm -f /tmp/client.json")
     ssh.exec!("rm -f /etc/chef/validation.pem")
+  end
+
+  # Writes the validation pem for the client.
+  #
+  # @param [ EventMachine::Ssh::Connection ] ssh The em-ssh connection.
+  # @param [ Souffle::Node ] node The given node to work with.
+  def write_client_validation_pem(ssh, node)
+    validation_pem = node.try_opt(:chef_validation)
+    ssh.exec!("mkdir -p /etc/chef")
+    ssh.exec!("echo '''#{validation_pem}''' > /etc/chef/validation.pem")
   end
 
 end
