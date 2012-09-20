@@ -579,6 +579,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       rm_files = %w{ /tmp/cookbooks /tmp/cookbooks-latest.tar.gz
         /tmp/roles /tmp/solo.rb /tmp/solo.json /tmp/chef_bootstrap }
       ssh.exec!("rm -rf #{rm_files}")
+      configure_chef_server if n.options[:is_chef_server]
       n.provisioner.provisioned
     end
   end
@@ -591,11 +592,21 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     client_cmds << "-j /tmp/client.json "
     client_cmds << "-S #{node.try_opt(:chef_server)} "
     n = node; ssh_block(node) do |ssh|
+      # TODO configure the validation pem for the client
       write_temp_chef_json(ssh, n)
       ssh.exec!(client_cmds)
       cleanup_temp_chef_files(ssh, n)
       node.provisioner.provisioned
     end
+  end
+
+  # Configures the chef server url and validation keys for the system.
+  #
+  # @param [ EventMachine::Ssh::Connection ] ssh The em-ssh connection.
+  # @param [ Souffle::Node ] node The given node to work with.
+  def configure_chef_server(ssh, node)
+    # TODO configure the chef server url
+    # TODO configure the system chef validation pem
   end
 
   # Rsync's a file to a remote node.

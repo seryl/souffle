@@ -2,6 +2,8 @@
 
 ### v0.0.5
 
+* Added chef-server/chef-client orchestration
+
 ### v0.0.4
 
 * Added chef-client support
