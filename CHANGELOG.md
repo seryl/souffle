@@ -1,5 +1,7 @@
 # Changelog
 
+### v0.0.5
+
 ### v0.0.4
 
 * Added chef-client support
