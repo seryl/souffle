@@ -13,15 +13,9 @@ class Souffle::Server
   # Runs the server.
   def run
     if Souffle::Config[:server]
-      EM.synchrony do
-        @app = Rack::Builder.new do
-          use Rack::Lint
-          use Rack::ShowExceptions
-          run Rack::Cascade.new([Souffle::Http])
-        end.to_app
-
-        Rack::Handler.get(:thin).run(@app, rack_options)
-      end
+      run_server
+    else
+      run_instance
     end
   end
 
@@ -43,6 +37,27 @@ class Souffle::Server
       end
     end
     opts
+  end
+
+  # Starts a long-running webserver that continuously handles requests.
+  def run_server
+    EM.synchrony do
+      @app = Rack::Builder.new do
+        use Rack::Lint
+        use Rack::ShowExceptions
+        run Rack::Cascade.new([Souffle::Http])
+      end.to_app
+
+      Rack::Handler.get(:thin).run(@app, rack_options)
+    end
+  end
+
+  # Starts a single instance of the provisioner.
+  def run_instance
+    Souffle::Log.info "Single instance runs are not currently implemented..."
+    # system = Souffle::System.from_hash(data)
+    # provider = Souffle::Provider.plugin(system.try_opt(:provider)).new
+    # system_tag = provider.create_system(system)
   end
   
 end
