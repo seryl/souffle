@@ -484,7 +484,6 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     else
       provision_chef_client(node)
     end
-    node.provisioner.provisioned
   end
 
   # Waits for ssh to be accessible for a node for the initial connection and
@@ -572,7 +571,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     solo_config =  "node_name \"#{node.fqdn}\"\n"
     solo_config << "cookbook_path \"/tmp/cookbooks\"\n"
     solo_config << 'role_path "/tmp/roles"'
-    ssh_block(node) do |ssh|
+    n = node; ssh_block(node) do |ssh|
       ssh.exec!("sleep 2; tar -zxf /tmp/cookbooks-latest.tar.gz -C /tmp")
       ssh.exec!("echo '#{solo_config}' >/tmp/solo.rb")
       ssh.exec!("echo '#{solo_json}' >/tmp/solo.json")
@@ -580,6 +579,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       rm_files = %w{ /tmp/cookbooks /tmp/cookbooks-latest.tar.gz
         /tmp/roles /tmp/solo.rb /tmp/solo.json /tmp/chef_bootstrap }
       ssh.exec!("rm -rf #{rm_files}")
+      n.provisioner.provisioned
     end
   end
 
@@ -589,7 +589,10 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   def provision_chef_client(node)
     client_cmds =  "chef-client -N #{node.fqdn} "
     client_cmds << "-S #{node.options[:chef_server]} "
-    ssh_block(node) { |ssh| ssh.exec!(client_cmds) }
+    ssh_block(node) do |ssh|
+      ssh.exec!(client_cmds)
+      node.provisioner.provisioned
+    end
   end
 
   # Rsync's a file to a remote node.

@@ -136,8 +136,8 @@ class Souffle::Provisioner::Node
 
   # Notifies the system that the current node has completed provisioning.
   def node_provisioned
-    Souffle::Log.info "#{@node.log_prefix} Node Provisioned."
-    provider.system.provisioner.node_provisioned
+    Souffle::Log.info "#{@node.log_prefix} Node provisioned."
+    system_provisioner.node_provisioned
   end
 
   # Kills the node entirely.
@@ -160,5 +160,10 @@ class Souffle::Provisioner::Node
   # Helper function for the node's system provider.
   def provider
     @node.provider
+  end
+
+  # Helper function for the system provisioner.
+  def system_provisioner
+    @node.system.provisioner
   end
 end

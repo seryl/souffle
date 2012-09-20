@@ -23,11 +23,6 @@ class Souffle::Provisioner::System
       transition :creating => :provisioning
     end
 
-    event :node_provisioned do
-      @nodes_completed += 1
-      provisioned if @nodes_completed == @system.nodes.size
-    end
-
     event :provisioned do
       transition :provisioning => :complete
     end
@@ -125,12 +120,18 @@ class Souffle::Provisioner::System
     Souffle::Log.info "[#{system_tag}] System provisioned."
   end
 
+  # Updates the number of nodes provisioned for the system provisioner.
+  def node_provisioned
+    @nodes_completed += 1
+    provisioned if @nodes_completed == @system.nodes.size
+  end
+
   # Kills the system.
   def kill_system
     # @provider.kill(@system.nodes)
   end
 
-  # Handles the error state and recreates the system
+  # Handles the error state and recreates the system.
   def error_handler
     @failures += 1
     if @failures >= @max_failures
