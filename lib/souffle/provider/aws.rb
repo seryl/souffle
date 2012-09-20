@@ -479,7 +479,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @todo Setup the chef/chef-solo tar gzip and ssh connections.
   def provision(node)
     set_hostname(node)
-    if node.try_opt(:chef_provisioner).to_s == "solo"
+    if node.try_opt(:chef_provisioner).to_s.downcase == "solo"
       provision_chef_solo(node, generate_chef_json(node))
     else
       provision_chef_client(node)
