@@ -40,3 +40,7 @@
 * Added `tag`, `domain`, and `fqdn` node helpers
 * Bugfix for repo_path
 * Hostname is now set at provisioning
+
+### v0.0.4
+
+* Added provider plugins support
