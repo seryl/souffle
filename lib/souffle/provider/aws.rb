@@ -475,8 +475,6 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   end
 
   # Provisions a node with the chef/chef-solo configuration.
-  # 
-  # @todo Setup the chef/chef-solo tar gzip and ssh connections.
   def provision(node)
     set_hostname(node)
     if node.try_opt(:chef_provisioner).to_s.downcase == "solo"
@@ -585,8 +583,6 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   end
 
   # Provisions a box using the chef_client provisioner.
-  # 
-  # @todo Chef client provisioner needs to be completed.
   def provision_chef_client(node)
     client_cmds =  "chef-client -N #{node.fqdn} "
     client_cmds << "-j /tmp/client.json "
