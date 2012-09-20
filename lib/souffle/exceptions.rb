@@ -30,4 +30,7 @@ class Souffle::Exceptions
 
   # The AWS Keys are invalid.
   class InvalidAwsKeys < RuntimeError; end
+
+  # Plugin does not exist.
+  class PluginDoesNotExist < RuntimeError; end
 end

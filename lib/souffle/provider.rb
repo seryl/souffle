@@ -8,16 +8,19 @@ module Souffle::Provider
     #
     # @return [ Array ] The list of available provider plugins.
     def plugins
-      self.constants.map { |k| k.to_s }
+      constants.map { |k| k.to_s.downcase }
     end
 
     # Returns the plugin with the given name.
     #
     # @param [ String ] name The name of the plugin to select.
     #
-    # @return [ Souffle::Provider::Base ]
+    # @return [ Souffle::Provider::Base ] The plugin with the given name.
     def plugin(name)
-      self.constants.select { |k| k.to_s.downcase == name.downcase }.first
+      plug = constants.select { |k| k.to_s.downcase == name.downcase }.first
+      Souffle::Provider.const_get(plug)
+    rescue Souffle::Exceptions::PluginDoesNotExist => e
+      Souffle::Log.error "#{e.message}:\n#{e.backtrace.join("\n")}"
     end
   end
 

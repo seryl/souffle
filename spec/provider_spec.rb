@@ -53,4 +53,14 @@ describe "Souffle::Provider::Base" do
 
     JSON.parse(@provider.generate_chef_json(node)).should eql(runlist)
   end
+
+  it "should be able to generate a list of provider plugins" do
+    ["base", "vagrant", "aws"].each do |plugin|
+      Souffle::Provider.plugins.include?(plugin).should eql(true)
+    end
+  end
+
+  it "should be able to select a particular plugin" do
+    Souffle::Provider.plugin("aws").should eql(Souffle::Provider::AWS)
+  end
 end
