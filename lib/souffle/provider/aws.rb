@@ -210,7 +210,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
 
       pre_event do
         @partitions = 0
-        @provider = node.provisioner.provider
+        @provider = node.provider
         node.options[:volumes].each_with_index do |volume, index|
           @provider.partition_device(
             node, @provider.volume_id_to_device(index)) do |count|
@@ -330,7 +330,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
 
       pre_event do
         Souffle::Log.info "#{node.log_prefix} Waiting for node running..."
-        @provider = node.provisioner.provider
+        @provider = node.provider
         @blk = blk
       end
 
@@ -364,7 +364,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
 
       pre_event do
         Souffle::Log.info "#{node.log_prefix} Waiting for EBS to be ready..."
-        @provider = node.provisioner.provider
+        @provider = node.provider
         @volume_ids = node.options[:volumes].map { |v| v[:aws_id] }
       end
 
@@ -515,7 +515,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
 
       pre_event do
         Souffle::Log.info "#{node.log_prefix} Waiting for ssh..."
-        @provider = node.provisioner.provider
+        @provider = node.provider
         @blk = blk
       end
 

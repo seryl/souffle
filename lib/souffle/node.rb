@@ -99,6 +99,13 @@ class Souffle::Node
     nil
   end
 
+  # Returns the current system provider.
+  #
+  # @return [ Souffle::Provider::Base ] The current system provider.
+  def provider
+    system.provider
+  end
+
   # The logging prefix for the given node.
   #
   # @return [ String ] The logging prefix for the given node.

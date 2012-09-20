@@ -103,6 +103,13 @@ class Souffle::System
     @nodes.select { |n| n.dependencies.any? }
   end
 
+  # Returns the current system provider.
+  #
+  # @return [ Souffle::Provider::Base ] The current system provider.
+  def provider
+    @provisioner.provider
+  end
+
   # Tries to fetch an option parameter otherwise it grabs it from config.
   # 
   # @param [ Symbol ] opt The option to try and fetch.

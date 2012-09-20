@@ -152,6 +152,6 @@ class Souffle::Provisioner::Node
 
   # Helper function for the node's system provider.
   def provider
-    @node.system.provisioner.provider
+    @node.provider
   end
 end
