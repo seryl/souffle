@@ -588,9 +588,12 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @todo Chef client provisioner needs to be completed.
   def provision_chef_client(node)
     client_cmds =  "chef-client -N #{node.fqdn} "
-    client_cmds << "-S #{node.options[:chef_server]} "
-    ssh_block(node) do |ssh|
+    client_cmds << "-j /tmp/client.json "
+    client_cmds << "-S #{node.try_opt(:chef_server)} "
+    n = node; ssh_block(node) do |ssh|
+      write_temp_chef_json(ssh, n)
       ssh.exec!(client_cmds)
+      cleanup_temp_chef_files(ssh, n)
       node.provisioner.provisioned
     end
   end
@@ -726,6 +729,25 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     rescue
       nil
     end
+  end
+
+  private
+
+  # Writes a temporary chef-client json file.
+  #
+  # @param [ EventMachine::Ssh::Connection ] ssh The em-ssh connection.
+  # @param [ Souffle::Node ] node The given node to work with.
+  def write_temp_chef_json(ssh, node)
+    ssh.exec!("echo '''#{generate_chef_json(node)}''' > /tmp/client.json")
+  end
+
+  # Removes the temporary chef-client files.
+  #
+  # @param [ EventMachine::Ssh::Connection ] ssh The em-ssh connection.
+  # @param [ Souffle::Node ] node The given node to work with.
+  def cleanup_temp_chef_files(ssh, node)
+    ssh.exec!("rm -f /tmp/client.json")
+    ssh.exec!("rm -f /etc/chef/validation.pem")
   end
 
 end

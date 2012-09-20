@@ -2,6 +2,7 @@
 
 ### v0.0.4
 
+* Added chef-client support
 * Added warning for cli one-off runs
 * Added provider plugins support
 * Added provider helper methods
