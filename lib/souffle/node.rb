@@ -100,14 +100,14 @@ class Souffle::Node
   end
 
   # The logging prefix for the given node.
-  # 
+  #
   # @return [ String ] The logging prefix for the given node.
   def log_prefix
     "[#{tag}: #{name}]"
   end
 
   # The tag for the given node.
-  # 
+  #
   # @return [ String ] The tag for the given node.
   def tag
     try_opt(:tag)
