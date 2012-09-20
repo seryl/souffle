@@ -10,6 +10,7 @@
 * Updated handler for node provisioning
 * Updated handler for system provisioning
 * Node provisioning updates are now evented
+* Updated eventmachine to 1.0.0
 
 ### v0.0.3
 

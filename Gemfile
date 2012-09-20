@@ -4,7 +4,7 @@ source "http://rubygems.org"
 #   gem "activesupport", ">= 2.3.5"
 
 gem "yajl-ruby", "~> 1.1.0"
-gem "eventmachine", "~> 0.12.10"
+gem "eventmachine", "~> 1.0.0"
 gem "amqp", "~> 0.9.7"
 gem "state_machine", "~> 1.1.2"
 gem "em-ssh", "~> 0.4.0"
