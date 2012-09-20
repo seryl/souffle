@@ -286,8 +286,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   def setup_mdadm(node)
     ssh_block(node) do |ssh|
       ssh.exec!("/usr/bin/yum install -y mdadm")
+      node.provisioner.mdadm_installed
     end
-    node.provisioner.mdadm_installed
   end
 
   # Sets up software raid for the given node.
