@@ -587,9 +587,9 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @todo Chef client provisioner needs to be completed.
   def provision_chef_client(node)
-    ssh_block(node) do |ssh|
-      ssh.exec!("chef-client")
-    end
+    client_cmds =  "chef-client -N #{node.fqdn} "
+    client_cmds << "-S #{node.options[:chef_server]} "
+    ssh_block(node) { |ssh| ssh.exec!(client_cmds) }
   end
 
   # Rsync's a file to a remote node.
