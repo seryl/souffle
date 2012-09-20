@@ -6,6 +6,7 @@
 * Added provider plugins support
 * Added provider helper methods
 * Updated documentation
+* System timeout set to 10 minutes
 
 ### v0.0.3
 

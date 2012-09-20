@@ -51,7 +51,7 @@ class Souffle::Provisioner::System
   # @param [ Souffle::Provider::Base ] provider The provider to use.
   # @param [ Fixnum ] max_failures the maximum number of failures.
   # @param [ Fixnum ] timeout The maximum time to wait for node creation.
-  def initialize(system, provider, max_failures=3, timeout=500)
+  def initialize(system, provider, max_failures=3, timeout=600)
     @failures = 0
     @system = system
     @provider = provider
