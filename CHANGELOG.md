@@ -44,3 +44,4 @@
 ### v0.0.4
 
 * Added provider plugins support
+* Added provider helper methods
