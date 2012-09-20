@@ -13,6 +13,7 @@ class Souffle::Provisioner::System
     after_transition :initializing => :creating, :do => :create
     after_transition :creating => :provisioning, :do => :provision
     after_transition any => :initializing, :do => :create
+    after_transition :provisioning => :complete, :do => :system_provisioned
 
     event :initialized do
       transition :initializing => :creating
@@ -20,6 +21,11 @@ class Souffle::Provisioner::System
 
     event :created do
       transition :creating => :provisioning
+    end
+
+    event :node_provisioned do
+      @nodes_completed += 1
+      provisioned if @nodes_completed == @system.nodes.size
     end
 
     event :provisioned do
@@ -58,6 +64,7 @@ class Souffle::Provisioner::System
     @time_used = 0
     @timeout = timeout
     @max_failures = max_failures
+    @nodes_completed = 0
     super() # NOTE: This is here to initialize state_machine.
   end
 
@@ -111,6 +118,11 @@ class Souffle::Provisioner::System
         error_occurred
       end
     end
+  end
+
+  # System has completed provisioning.
+  def system_provisioned
+    Souffle::Log.info "[#{system_tag}] System provisioned."
   end
 
   # Kills the system.
@@ -169,24 +181,9 @@ class Souffle::Provisioner::System
 
   # Wait until all of the nodes are provisioned and then continue.
   def wait_until_complete
-    total_nodes = @system.nodes.size
-    all_complete = false
-    timer = EM::PeriodicTimer.new(2) do
-      nodes_ready = @system.nodes.select do |n|
-        n.provisioner.state == "complete"
-      end.size
-
-      if nodes_ready == total_nodes
-        all_complete = true
-        timer.cancel
-        created
-      end
-    end
-
     EM::Timer.new(@timeout) do
-      unless all_complete
+      unless @nodes_completed == @system.nodes.size
         Souffle::Log.error "[#{system_tag}] System provision timeout reached."
-        timer.cancel
         error_occurred
       end
     end

@@ -7,6 +7,8 @@
 * Added provider helper methods
 * Updated documentation
 * System timeout set to 10 minutes
+* Updated handler for node provisioning
+* Updated handler for system provisioning
 
 ### v0.0.3
 

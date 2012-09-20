@@ -19,6 +19,7 @@ class Souffle::Provisioner::Node
     after_transition :formatting_device => :ready_to_provision,
                           :do => :ready
     after_transition any => :provisioning, :do => :provision
+    after_transition any => :complete, :do => :node_provisioned
 
     event :reclaimed do
       transition any => :creating
@@ -131,6 +132,12 @@ class Souffle::Provisioner::Node
   def provision
     Souffle::Log.info "#{@node.log_prefix} Provisioning node..."
     provider.provision(@node)
+  end
+
+  # Notifies the system that the current node has completed provisioning.
+  def node_provisioned
+    Souffle::Log.info "#{@node.log_prefix} Node Provisioned."
+    provider.system.provisioner.node_provisioned
   end
 
   # Kills the node entirely.
