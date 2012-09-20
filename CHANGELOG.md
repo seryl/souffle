@@ -46,3 +46,4 @@
 * Added warning for cli one-off runs
 * Added provider plugins support
 * Added provider helper methods
+* Updated documentation

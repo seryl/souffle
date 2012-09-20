@@ -48,9 +48,9 @@ As an example system we'll generate two nodes that both are provisioned with `so
 
 ```json
 {
-  "provider": "aws",
   "user": "josh",
   "options": {
+    "provider": "aws",
     "domain": "mydomain.com",
     "type": "solo",
     "aws_ebs_size": 10,
