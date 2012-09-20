@@ -9,6 +9,7 @@
 * System timeout set to 10 minutes
 * Updated handler for node provisioning
 * Updated handler for system provisioning
+* Node provisioning updates are now evented
 
 ### v0.0.3
 
