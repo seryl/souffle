@@ -308,7 +308,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @return [ Array ] The list of created ebs volumes.
   def create_ebs(node)
     volumes = Array.new
-    node.options.fetch(:volume_count, 0).times do
+    volume_total = node.try_opt(:volume_count) || 0
+    volume_total.times do
       volumes << @ec2.create_volume(
         node.try_opt(:aws_snapshot_id),
         node.try_opt(:aws_ebs_size),
