@@ -358,7 +358,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ Souffle::Node ] node The node to wait for EBS on.
   # @param [ Fixnum ] poll_timeout The maximum number of seconds to wait.
   # @param [ Fixnum ] poll_interval The interval in seconds to poll EC2.
-  def wait_until_ebs_ready(node, poll_timeout=100, poll_interval=2)
+  def wait_until_ebs_ready(node, poll_timeout=200, poll_interval=2)
     ec2 = @ec2; Souffle::PollingEvent.new(node) do
       timeout poll_timeout
       interval poll_interval
