@@ -3,6 +3,7 @@
 ### v0.0.5
 
 * Added chef-server/chef-client orchestration
+* Fixed mdadm creation issues
 
 ### v0.0.4
 

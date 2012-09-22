@@ -165,7 +165,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     ssh_block(node) do |ssh|
       ssh.exec!(mdadm_string)
       ssh.exec!(export_mdadm)
-      yield if block_given?
+      yield(node) if block_given?
     end
   end
 
@@ -180,8 +180,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ Souffle::Node ] node The node to format it's new partitions.
   def format_device(node)
-    partition_device(node, "/dev/md0", "8e") do
-      _format_device(node, "/dev/md0p1")
+    n = node; partition_device(node, "/dev/md0", "8e") do
+      _format_device(n, "/dev/VolGroup00/data")
     end
   end
 
@@ -192,10 +192,12 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ String ] filesystem The filesystem to use when formatting.
   def _format_device(node, device, filesystem="ext4")
     return if node.options[:volumes].nil?
-    setup_lvm(node)
-    ssh_block(node) do |ssh|
-      ssh.exec!("#{fs_formatter(filesystem)} #{device}")
-      mount_lvm(node) { node.provisioner.device_formatted }
+    dev = device; ssh_block(node) do |ssh|
+      setup_lvm(ssh)
+      ssh.exec!("#{fs_formatter(filesystem)} #{dev}")
+      mount_lvm(ssh, "/dev/mapper/VolGroup00-data") do
+        node.provisioner.device_formatted
+      end
     end
   end
 
@@ -245,7 +247,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     partition_cmd =  "echo \",,#{partition_type}\""
     partition_cmd << "| /sbin/sfdisk #{device}"
     ssh_block(node) do |ssh|
-      ssh.exec!("#{partition_cmd}")
+      ssh.exec!(partition_cmd)
       yield(1) if block_given?
     end
   end
@@ -253,31 +255,26 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # Sets up the lvm partition for the raid devices.
   # 
   # @param [ Souffle::Node ] node The node to setup lvm on.
-  def setup_lvm(node)
-    return if node.options[:volumes].nil?
-    ssh_block(node) do |ssh|
-      ssh.exec!("pvcreate /dev/md0p1")
-      ssh.exec!("vgcreate VolGroup00 /dev/md0p1")
-      ssh.exec!("lvcreate -l 100%vg VolGroup00 -n data")
-    end
+  def setup_lvm(ssh)
+    ssh.exec!("pvcreate /dev/md0p1")
+    ssh.exec!("vgcreate VolGroup00 /dev/md0p1")
+    ssh.exec!("lvcreate -l 100%vg VolGroup00 -n data")
   end
 
   # Mounts the newly created lvm configuration and adds it to fstab.
   # 
-  # @param [ Souffle::Node ] node The node to mount lvm on.
-  def mount_lvm(node)
-    fstab_str =  "/dev/md0p1      /data"
-    fstab_str << "     ext4    noatime,nodiratime  1  1"
+  # @param [ EventMachine::Ssh::Connection ] ssh The current ssh connection.
+  # @param [ String ] device The device to mount.
+  def mount_lvm(ssh, device)
+    fstab_str =  "#{device}      /data"
+    fstab_str << "     ext4    rw,noatime,nodiratime  1  1"
 
-    mount_str =  "mount -o rw,noatime,nodiratime"
-    mount_str << " /dev/mapper/VolGroup00-data /data"
-    ssh_block(node) do |ssh|
-      ssh.exec!("mkdir /data")
-      ssh.exec!(mount_str)
-      ssh.exec!("echo #{fstab_str} >> /etc/fstab")
-      ssh.exec!("echo #{fstab_str} >> /etc/mtab")
-      yield if block_given?
-    end
+    mount_str =  "mount -t ext4 -o rw,noatime,nodiratime "
+    mount_str << "#{device} /data"
+
+    ssh.exec!("mkdir /data; #{mount_str}")
+    ssh.exec!("echo #{fstab_str} >> /etc/fstab")
+    yield(ssh) if block_given?
   end
 
   # Installs mdadm (multiple device administration) to manage raid.
