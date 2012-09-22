@@ -154,7 +154,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ String ] level The raid level to use.
   # options are: linear, raid0, 0, stipe, raid1, 1, mirror,
   # raid4, 4, raid5, 5, raid6, 6, multipath, mp
-  def create_raid(node, devices=[], md_device=0, chunk=64, level="raid0")
+  def create_raid(node, devices=[], md_device=0, chunk=512, level="raid0")
     dev_list = devices.map { |s| "#{s}1" }
     mdadm_string =  "/sbin/mdadm --create /dev/md#{md_device} "
     mdadm_string << "--chunk=#{chunk} --level=#{level} "
