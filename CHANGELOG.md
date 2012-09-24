@@ -4,6 +4,7 @@
 
 * Added chef-server/chef-client orchestration
 * Fixed mdadm creation issues
+* Fixed merging for system attributes
 
 ### v0.0.4
 
