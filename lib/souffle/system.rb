@@ -137,13 +137,14 @@ class Souffle::System
     # @param [ Hash ] system_hash The hash representation of the system.
     def from_hash(system_hash)
       guarentee_valid_hash(system_hash)
-      system_hash[:options] ||= {}
+      system_hash[:options] ||= Hash.new
 
       sys = Souffle::System.new
       sys.options = system_hash[:options]
 
       system_hash[:nodes].each do |n|
         n[:options] ||= Hash.new
+        n[:options][:attributes] ||= Hash.new
         
         node = Souffle::Node.new
         node.name = n[:name]
@@ -151,6 +152,8 @@ class Souffle::System
         Array(n[:dependencies]).each { |dep| node.dependencies << dep }
         node.options = n[:options]
         node.options[:attributes] ||= Hash.new
+        node.options[:attributes] = sys.options[:attributes].merge(
+          node.options[:attributes])
         sys.add(node)
       end
       sys
