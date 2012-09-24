@@ -1,5 +1,10 @@
 # Changelog
 
+### v0.0.5.galaxy
+
+* Added galaxy console integration
+* Added galaxy client integration
+
 ### v0.0.5
 
 * Added chef-server/chef-client orchestration

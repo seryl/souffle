@@ -519,7 +519,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   def provision(node)
     set_hostname(node)
     if node.try_opt(:chef_provisioner).to_s.downcase == "solo"
-      provision_chef_solo(node, generate_chef_json(node))
+      provision_chef_solo(node)
     else
       provision_chef_client(node)
     end
@@ -604,13 +604,15 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # Provisions a box using the chef_solo provisioner.
   # 
   # @param [ String ] node The node to provision.
-  # @param [ String ] solo_json The chef solo json string to use.
-  def provision_chef_solo(node, solo_json)
+  def provision_chef_solo(node)
+    configure_galaxy_client(node) unless node.options[:is_galaxy_server]
+    solo_json = generate_chef_json(node)
     rsync_file(node, @newest_cookbooks, "/tmp")
     solo_config =  "node_name \"#{node.fqdn}\"\n"
     solo_config << "cookbook_path \"/tmp/cookbooks\"\n"
     solo_config << 'role_path "/tmp/roles"'
     n = node; ssh_block(node) do |ssh|
+      ssh.exec!("gem update chef")
       ssh.exec!("sleep 2; tar -zxf /tmp/cookbooks-latest.tar.gz -C /tmp")
       ssh.exec!("echo '#{solo_config}' >/tmp/solo.rb")
       ssh.exec!("echo '#{solo_json}' >/tmp/solo.json")
@@ -619,6 +621,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         /tmp/roles /tmp/solo.rb /tmp/solo.json /tmp/chef_bootstrap }
       ssh.exec!("rm -rf #{rm_files}") unless n.try_opt(:debug)
       configure_chef_server(ssh, node) if n.options[:is_chef_server]
+      configure_galaxy_server(ssh, node) if n.options[:is_galaxy_server]
       n.provisioner.provisioned
     end
   end
@@ -629,6 +632,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     client_cmds << "-j /tmp/client.json "
     client_cmds << "-S #{node.try_opt(:chef_server)} "
     n = node; ssh_block(node) do |ssh|
+      ssh.exec!("gem update chef")
       write_client_validation_pem(ssh, n)
       write_temp_chef_json(ssh, n)
       ssh.exec!(client_cmds)
@@ -647,6 +651,29 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
     synchronize_chef(node)
     validation_pem = ssh.exec!("cat /etc/chef/validation.pem")
     node.system.options[:chef_validation] = validation_pem
+  end
+
+  # Configures a galaxy console server for the cluster.
+  #
+  # @param [ EventMachine::Ssh::Connection ] ssh The em-ssh connection.
+  # @param [ Souffle::Node ] node The given node to work with.
+  def configure_galaxy_server(ssh, node)
+    n = @ec2.describe_instances(node.options[:aws_instance_id]).first
+    node.system.options[:galaxy] ||= {}
+    node.system.options[:galaxy][:console] ||= {}
+
+    nodeip = n[:private_ip_address]
+    node.system.options[:galaxy][:console][:url] = "http://#{nodeip}:4442"
+    Souffle::Log.debug "#{node.log_prefix} System info: #{node.system.inspect}"
+  end
+
+  # Configures a galaxy console client in the cluster.
+  #
+  # @param [ EventMachine::Ssh::Connection ] ssh The em-ssh connection.
+  def configure_galaxy_client(node)
+    Souffle::Log.info "#{node.log_prefix} Configuring galaxy client..."
+    node.system.options[:galaxy] ||= {}
+    node.options.merge!(node.system.options[:galaxy])
   end
 
   # Synchronizes the chef server configuration with the souffle server.
