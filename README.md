@@ -63,8 +63,8 @@ As an example system we'll generate two nodes that both are provisioned with `so
         "attributes": {
           "nginx": { "example_attribute": "blehk" }
         },
-        "run_list": [ "role[nginx_server]" ]
-      }
+      },
+      "run_list": [ "role[nginx_server]" ]
     },
     {
       "name": "example_srv",
