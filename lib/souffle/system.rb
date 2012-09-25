@@ -3,7 +3,7 @@ require 'set'
 # A system description with nodes and the statemachine to manage them.
 class Souffle::System
   attr_reader :nodes
-  attr_accessor :options, :provisioner
+  attr_accessor :user, :options, :provisioner
 
   # Creates a new souffle system.
   def initialize
@@ -140,6 +140,7 @@ class Souffle::System
       system_hash[:options] ||= Hash.new
 
       sys = Souffle::System.new
+      sys.user = system_hash[:user]
       sys.options = system_hash[:options]
       sys.options[:attributes] ||= Hash.new
 

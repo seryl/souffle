@@ -107,12 +107,14 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   def tag_node(node, tag="")
     @ec2.create_tags(Array(node.options[:aws_instance_id]), {
       :Name => node.name,
-      :souffle => tag
+      :souffle => tag,
+      :user => node.system.user
     })
     volume_ids = node.options[:volumes].map { |vol| vol[:aws_id] }
     @ec2.create_tags(Array(volume_ids), {
       :instance_id => node.options[:aws_instance_id],
-      :souffle => tag
+      :souffle => tag,
+      :user => node.system.user
     }) unless Array(volume_ids).empty?
   end
 

@@ -44,13 +44,57 @@ class Souffle::Http < Sinatra::Base
   
   # Returns the current status of souffle.
   get '/system' do
-    { :status => Souffle::State.status }.to_json
+    access_key    = Souffle::Config[:aws_access_key]
+    access_secret = Souffle::Config[:aws_access_secret]
+    logger = Logger.new('/dev/null')
+    ec2 = RightAws::Ec2.new(
+      access_key, access_secret,
+      :region => Souffle::Config[:aws_region],
+      :logger => logger)
+
+    ec2.describe_instances(
+        :filters => { 'tag-key' => "souffle" }).inject({}) do |slist, instance|
+      slist[instance[:tags]["souffle"]] ||= Hash.new
+      slist[instance[:tags]["souffle"]][:nodes] ||= Array.new
+      slist[instance[:tags]["souffle"]][:user]  ||= instance[:tags]["user"]
+
+      instance_info = {
+        :name => instance[:tags]["Name"],
+        :ipaddress => instance[:private_ip_address],
+        :state => instance[:aws_state].downcase
+      }
+
+      slist[instance[:tags]["souffle"]][:nodes] << instance_info
+      slist
+    end.to_json
   end
 
   # Returns the system-specific status.
   get '/system/:system' do
-    { :success => false,
-      :message => "Not yet implemented." }.to_json
+    access_key    = Souffle::Config[:aws_access_key]
+    access_secret = Souffle::Config[:aws_access_secret]
+    logger = Logger.new('/dev/null')
+    ec2 = RightAws::Ec2.new(
+      access_key, access_secret,
+      :region => Souffle::Config[:aws_region],
+      :logger => logger)
+    
+    ec2.describe_instances( :filters => {
+      'tag-key' => "souffle", 'tag-value' => params[:system] }
+      ).inject({}) do |slist, instance|
+      slist[instance[:tags]["souffle"]] ||= Hash.new
+      slist[instance[:tags]["souffle"]][:nodes] ||= Array.new
+      slist[instance[:tags]["souffle"]][:user]  ||= instance[:tags]["user"]
+
+      instance_info = {
+        :name => instance[:tags]["Name"],
+        :ipaddress => instance[:private_ip_address],
+        :state => instance[:aws_state].downcase
+      }
+
+      slist[instance[:tags]["souffle"]][:nodes] << instance_info
+      slist
+    end.to_json
   end
 
   # Deletes a given system.
