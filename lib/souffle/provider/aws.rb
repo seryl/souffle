@@ -616,11 +616,11 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       ssh.exec!("echo '#{solo_config}' >/tmp/solo.rb")
       ssh.exec!("echo '#{solo_json}' >/tmp/solo.json")
       ssh.exec!("chef-solo -c /tmp/solo.rb -j /tmp/solo.json")
+      configure_chef_server(ssh, node) if n.options[:is_chef_server]
+      configure_galaxy_server(ssh, node) if n.options[:is_galaxy_server]
       rm_files = %w{ /tmp/cookbooks /tmp/cookbooks-latest.tar.gz
         /tmp/roles /tmp/solo.rb /tmp/solo.json /tmp/chef_bootstrap }
       ssh.exec!("rm -rf #{rm_files}") unless n.try_opt(:debug)
-      configure_chef_server(ssh, node) if n.options[:is_chef_server]
-      configure_galaxy_server(ssh, node) if n.options[:is_galaxy_server]
       n.provisioner.provisioned
     end
   end
@@ -658,7 +658,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ Souffle::Node ] node The given node to work with.
   def configure_galaxy_server(ssh, node)
     n = @ec2.describe_instances(node.options[:aws_instance_id]).first
-    node.system.options[:galaxy_announce_url] = \
+    node.system.options[:galaxy_announcement_url] = \
       "http://#{n[:private_ip_address]}:4442"
   end
 
@@ -671,11 +671,12 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       json_info = Hash.new
       json_info[:domain] = node.try_opt(:domain) || "souffle"
       json_info.merge!(node.options[:attributes])
-      json_info[:attributes][:galaxy] ||= Hash.new
-      json_info[:attributes][:galaxy][:console] ||= Hash.new
-      json_info[:attributes][:galaxy][:console][:announcement_url] = \
-        node.system.options[:galaxy_announce_url] \
-        unless node.options[:is_galaxy_server]
+      unless node.options[:is_galaxy_server]
+        json_info[:galaxy] ||= Hash.new
+        json_info[:galaxy][:console] ||= Hash.new 
+        json_info[:galaxy][:console][:announcement_url] = \
+          node.system.options[:galaxy_announcement_url]
+      end
       json_info[:run_list] = node.run_list
       JSON.pretty_generate(json_info)
     end
