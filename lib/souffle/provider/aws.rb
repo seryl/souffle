@@ -605,7 +605,6 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @param [ String ] node The node to provision.
   def provision_chef_solo(node)
-    configure_galaxy_client(node) unless node.options[:is_galaxy_server]
     solo_json = generate_chef_json(node)
     rsync_file(node, @newest_cookbooks, "/tmp")
     solo_config =  "node_name \"#{node.fqdn}\"\n"
@@ -659,22 +658,27 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ Souffle::Node ] node The given node to work with.
   def configure_galaxy_server(ssh, node)
     n = @ec2.describe_instances(node.options[:aws_instance_id]).first
-    node.system.options[:galaxy] ||= {}
-    node.system.options[:galaxy][:console] ||= {}
-
-    nodeip = n[:private_ip_address]
-    node.system.options[:galaxy][:console][:url] = "http://#{nodeip}:4442"
-    Souffle::Log.debug "#{node.log_prefix} System info: #{node.system.inspect}"
+    node.system.options[:galaxy_announce_url] = \
+      "http://#{n[:private_ip_address]}:4442"
   end
 
-  # Configures a galaxy console client in the cluster.
+  # Generates the json required for chef-solo to run on a node (galaxy).
   #
-  # @param [ EventMachine::Ssh::Connection ] ssh The em-ssh connection.
-  def configure_galaxy_client(node)
-    Souffle::Log.info "#{node.log_prefix} Configuring galaxy client..."
-    node.system.options[:galaxy] ||= {}
-    node.options.merge!(node.system.options[:galaxy])
-  end
+  # @param [ Souffle::Node ] node The node to generate chef-solo json for.
+  #
+  # @return [ String ] The chef-solo json for the particular node.
+  def generate_chef_json(node)
+      json_info = Hash.new
+      json_info[:domain] = node.try_opt(:domain) || "souffle"
+      json_info.merge!(node.options[:attributes])
+      json_info[:attributes][:galaxy] ||= Hash.new
+      json_info[:attributes][:galaxy][:console] ||= Hash.new
+      json_info[:attributes][:galaxy][:console][:announcement_url] = \
+        node.system.options[:galaxy_announce_url] \
+        unless node.options[:is_galaxy_server]
+      json_info[:run_list] = node.run_list
+      JSON.pretty_generate(json_info)
+    end
 
   # Synchronizes the chef server configuration with the souffle server.
   #
