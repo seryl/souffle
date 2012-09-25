@@ -367,6 +367,10 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       end
 
       event_loop do
+        if @volume_ids.empty?
+          event_complete
+          node.provisioner.created
+        end
         vol_status = ec2.describe_volumes(@volume_ids)
         avail = Array(vol_status).select { |v| v[:aws_status] == "available" }
         if avail.size == vol_status.size
