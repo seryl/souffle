@@ -141,6 +141,7 @@ class Souffle::System
 
       sys = Souffle::System.new
       sys.options = system_hash[:options]
+      sys.options[:attributes] ||= Hash.new
 
       system_hash[:nodes].each do |n|
         n[:options] ||= Hash.new
