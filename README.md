@@ -168,27 +168,37 @@ You can start up the rest interface by starting `souffle` with the `-d` paramete
 
 <table>
   <tr>
-    <th>Command</th><th>Url</th><th>Example</th>
+    <th>Command</th><th>Method</th><th>Url</th><th>Example</th>
   </tr>
   <tr>
     <td>version</td>
+    <td>GET</td>
     <td>/, /version</td>
     <td>curl -sL http://localhost:8080/</td>
   </tr>
   <tr>
-    <td>create</td>
-    <td>/create</td>
-    <td>curl -sL http://localhost:8080/create</td>
+    <td>create a system</td>
+    <td>PUT</td>
+    <td>/system</td>
+    <td>curl -H "Content-Type: application/json" -X PUT -T galaxy_example.json http://localhost:8080/create</td>
   </tr>
   <tr>
-    <td>status (all)</td>
-    <td>/status</td>
-    <td>curl -sL http://localhost:8080/status</td>
+    <td>all systems status</td>
+    <td>GET</td>
+    <td>/system</td>
+    <td>curl -sL http://localhost:8080/system</td>
   </tr>
   <tr>
-    <td>status (specific)</td>
-    <td>/status/<code>system</code></td>
-    <td>curl -sL http://localhost:8080/status/<code>6cbb78b2925a</code></td>
+    <td>specific system status</td>
+    <td>GET</td>
+    <td>/system/<code>system</code></td>
+    <td>curl -sL http://localhost:8080/system/<code>6cbb78b2</code></td>
+  </tr>
+  <tr>
+    <td>delete a system</td>
+    <td>DELETE</td>
+    <td>/system/<code>system</code></td>
+    <td>curl -X DELETE http://localhost:8080/system/<code>6cbb78b2</code></td>
   </tr>
 </table>
 
