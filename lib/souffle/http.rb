@@ -46,4 +46,10 @@ class Souffle::Http < Sinatra::Base
       { :success => false }.to_json
     end
   end
+
+  # Deletes a given system.
+  delete '/system/:system' do
+    { :success => false,
+      :message => "Not yet implemented." }.to_json
+  end
 end
