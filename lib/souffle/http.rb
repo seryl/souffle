@@ -48,7 +48,7 @@ class Souffle::Http < Sinatra::Base
   end
 
   # Returns the system-specific status.
-  get '/status/:system' do
+  get '/system/:system' do
     { :success => false,
       :message => "Not yet implemented." }.to_json
   end
