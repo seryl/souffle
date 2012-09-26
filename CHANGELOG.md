@@ -5,6 +5,9 @@
 * Added chef-server/chef-client orchestration
 * Fixed mdadm creation issues
 * Fixed merging for system attributes
+* Updated REST API
+* Support terminating systems
+* Additional documentation updates
 
 ### v0.0.4
 
