@@ -401,7 +401,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         volume_id_to_aws_device(index),
         node.try_opt(:delete_on_termination) )
     end
-    @provider.wait_until_ebs_attached(node)
+    node.provider.wait_until_ebs_attached(node)
   end
 
   # Polls the EBS volume status until they're ready then runs the given block.
@@ -425,9 +425,12 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
           event_complete
           node.provisioner.created
         end
-        vol_status = ec2.describe_volumes(@volume_ids)
-        avail = Array(vol_status).select { |v| v[:aws_status] == "in-use" }
-        if avail.size == vol_status.size
+        n = ec2.describe_instances(node.options[:aws_instance_id]).first
+        avail = Array(n[:block_device_mappings]).select do |v|
+          @volume_ids.include?(v[:ebs_volume_id]) and \
+          v[:ebs_status] == "attached"
+        end
+        if avail.size == @volume_ids.size
           event_complete
           node.provisioner.created
         end
@@ -720,10 +723,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @return [ String ] The device string to mount to.
   def volume_id_to_device(volume_id)
-    if volume_id >= 4
-      volume_id += 1
-    end
-    "/dev/xvd#{(volume_id + "a".ord).chr}"
+    "/dev/xvd#{(volume_id + "f".ord).chr}"
   end
 
   # Takes the volume count in the array and converts it to a device name.
@@ -735,10 +735,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @return [ String ] The device string to mount to.
   def volume_id_to_aws_device(volume_id)
-    if volume_id >= 4
-      volume_id += 1
-    end
-    "/dev/hd#{(volume_id + "a".ord).chr}"
+    "/dev/sd#{(volume_id + "f".ord).chr}"
   end
 
   # Chooses the appropriate formatter for the given filesystem.
