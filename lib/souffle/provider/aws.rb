@@ -369,19 +369,17 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
       event_loop do
         if @volume_ids.empty?
           event_complete
-          node.provisioner.created
         end
         vol_status = ec2.describe_volumes(@volume_ids)
         avail = Array(vol_status).select { |v| v[:aws_status] == "available" }
         if avail.size == vol_status.size
           event_complete
           @provider.attach_ebs(node)
-          node.provisioner.created
         end
       end
 
       error_handler do
-        error_msg = "#{node.log_prefix} Waiting for EBS Timed out..."
+        error_msg = "#{node.log_prefix} Waiting for EBS timed out..."
         Souffle::Log.error error_msg
         node.provisioner.error_occurred
       end
@@ -402,6 +400,44 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         node.options[:aws_instance_id],
         volume_id_to_aws_device(index),
         node.try_opt(:delete_on_termination) )
+    end
+    @provider.wait_until_ebs_attached(node)
+  end
+
+  # Polls the EBS volume status until they're ready then runs the given block.
+  # 
+  # @param [ Souffle::Node ] node The node to wait for EBS on.
+  # @param [ Fixnum ] poll_timeout The maximum number of seconds to wait.
+  # @param [ Fixnum ] poll_interval The interval in seconds to poll EC2.
+  def wait_until_ebs_attached(node, poll_timeout=300, poll_interval=2)
+    ec2 = @ec2; Souffle::PollingEvent.new(node) do
+      timeout poll_timeout
+      interval poll_interval
+
+      pre_event do
+        Souffle::Log.info "#{node.log_prefix} Waiting for EBS to attach..."
+        @provider = node.provider
+        @volume_ids = node.options[:volumes].map { |v| v[:aws_id] }
+      end
+
+      event_loop do
+        if @volume_ids.empty?
+          event_complete
+          node.provisioner.created
+        end
+        vol_status = ec2.describe_volumes(@volume_ids)
+        avail = Array(vol_status).select { |v| v[:aws_status] == "in-use" }
+        if avail.size == vol_status.size
+          event_complete
+          node.provisioner.created
+        end
+      end
+
+      error_handler do
+        error_msg = "#{node.log_prefix} Waiting for EBS to attach timed out..."
+        Souffle::Log.error error_msg
+        node.provisioner.error_occurred
+      end
     end
   end
 
