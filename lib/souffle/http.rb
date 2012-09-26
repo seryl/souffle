@@ -15,12 +15,12 @@ class Souffle::Http < Sinatra::Base
   end
 
   # Returns the current status of souffle.
-  get '/status' do
+  get '/system' do
     { :status => Souffle::State.status }.to_json
   end
 
   # Returns the id for the created environment or false on failure.
-  put '/create' do
+  put '/system' do
     begin
       data = JSON.parse(request.body.read, :symbolize_keys => true)
     rescue
