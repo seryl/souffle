@@ -7,6 +7,8 @@
 * Fixed merging for system attributes
 * Updated REST API
 * Support terminating systems
+* Added support for more than 4 EBS Volumes
+* Add a wait for ebs_attachment
 * Additional documentation updates
 
 ### v0.0.4
