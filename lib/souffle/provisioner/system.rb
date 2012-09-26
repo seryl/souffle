@@ -128,7 +128,7 @@ class Souffle::Provisioner::System
 
   # Kills the system.
   def kill_system
-    # @provider.kill(@system.nodes)
+    @provider.kill(@system.nodes)
   end
 
   # Handles the error state and recreates the system.
