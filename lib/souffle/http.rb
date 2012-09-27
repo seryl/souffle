@@ -107,7 +107,7 @@ class Souffle::Http < Sinatra::Base
       :region => Souffle::Config[:aws_region],
       :logger => logger)
 
-    remove_list = ec2.describe_instances ( :filters => {
+    remove_list = ec2.describe_instances( :filters => {
       'tag-key' => "souffle", 'tag-value' => params[:system] }
       ).inject([]) do |instance_list, instance|
       instance_list << instance[:aws_instance_id]
