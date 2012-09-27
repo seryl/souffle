@@ -716,26 +716,20 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
 
   # Takes the volume count in the array and converts it to a device name.
   # 
-  # @note This starts at /dev/xvda and goes to /dev/xvdb, etc.
-  # And due to the special case on AWS, skips /dev/xvde.
-  # 
   # @param [ Fixnum ] volume_id The count in the array for the volume id.
   # 
   # @return [ String ] The device string to mount to.
   def volume_id_to_device(volume_id)
-    "/dev/xvd#{(volume_id + "f".ord).chr}"
+    "/dev/xvd#{(volume_id + 'j'.ord).chr}"
   end
 
   # Takes the volume count in the array and converts it to a device name.
-  # 
-  # @note This starts at /dev/xvda and goes to /dev/xvdb, etc.
-  # And due to the special case on AWS, skips /dev/xvde.
   # 
   # @param [ Fixnum ] volume_id The count in the array for the volume id.
   # 
   # @return [ String ] The device string to mount to.
   def volume_id_to_aws_device(volume_id)
-    "/dev/sd#{(volume_id + "f".ord).chr}"
+    "/dev/sd#{(volume_id + 'j'.ord).chr}"
   end
 
   # Chooses the appropriate formatter for the given filesystem.
