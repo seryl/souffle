@@ -254,7 +254,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
 
   # Sets up the lvm partition for the raid devices.
   # 
-  # @param [ Souffle::Node ] node The node to setup lvm on.
+  # @param [ EventMachine::Ssh::Connection ] ssh The current ssh connection.
   def setup_lvm(ssh)
     ssh.exec!("pvcreate /dev/md0p1")
     ssh.exec!("vgcreate VolGroup00 /dev/md0p1")
