@@ -102,6 +102,15 @@ class Souffle::Config
   rack_port 8080
   rack_environment "development"
 
+  # AMQP Settings
+  amqp_user "guest"
+  amqp_pass "guest"
+  amqp_vhost "/"
+  amqp_host "0.0.0.0"
+  amqp_port 5672
+  amqp_insist false
+  amqp_retry 5
+
   # Vagrant Settings
   vagrant_dir "#{ENV['HOME']}/vagrant/vms"
 end

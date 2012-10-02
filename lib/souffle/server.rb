@@ -2,6 +2,7 @@ require 'thin'
 require 'eventmachine'
 require 'em-synchrony'
 require 'souffle/http'
+require 'souffle/mq'
 
 # The souffle server and management daemon.
 class Souffle::Server
@@ -49,6 +50,7 @@ class Souffle::Server
       end.to_app
 
       Rack::Handler.get(:thin).run(@app, rack_options)
+      Souffle::MQ.initialize_worker
     end
   end
 
