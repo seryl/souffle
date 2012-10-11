@@ -52,8 +52,13 @@ class Souffle::Http < Sinatra::Base
       :region => Souffle::Config[:aws_region],
       :logger => logger)
 
-    ec2.describe_instances(
-        :filters => { 'tag-key' => "souffle" }).inject({}) do |slist, instance|
+    filters = {}
+    filters[:filters]['tag-key'] = "souffle"
+    if Souffle::Config.has_key?(:aws_subnet_id)
+      filters[:filters]['subnet_id'] = Souffle::Config[:aws_subnet_id]
+    end
+
+    ec2.describe_instances(filters).inject({}) do |slist, instance|
       slist[instance[:tags]["souffle"]] ||= Hash.new
       slist[instance[:tags]["souffle"]][:nodes] ||= Array.new
       slist[instance[:tags]["souffle"]][:user]  ||= instance[:tags]["user"]
