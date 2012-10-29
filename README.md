@@ -1,5 +1,3 @@
-[![build status](https://secure.travis-ci.org/seryl/souffle.png)](http://travis-ci.org/seryl/souffle)
-
 souffle
 =======
 
@@ -228,6 +226,10 @@ that require you to pay (spinning up machines, etc), will only run if you
 have the environment variable `AWS_LIVE` set to `true`.
 
     AWS_LIVE=true rake
+
+## Code Status
+
+[![build status](https://secure.travis-ci.org/seryl/souffle.png)](http://travis-ci.org/seryl/souffle)
 
 ## Contributing to souffle
 
