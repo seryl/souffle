@@ -1,4 +1,7 @@
-# souffle
+[![build status](https://secure.travis-ci.org/seryl/souffle.png)](http://travis-ci.org/seryl/souffle)
+
+souffle
+=======
 
 An orchestrator for describing and building entire systems with [Chef](https://github.com/opscode/chef).
 
