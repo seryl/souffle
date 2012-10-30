@@ -30,4 +30,16 @@ class Souffle::Exceptions
 
   # The AWS Keys are invalid.
   class InvalidAwsKeys < RuntimeError; end
+  
+  # The Rackspace Keys are invalid.
+  class InvalidRackspaceKeys < RuntimeError; end
+
+  # Plugin does not exist.
+  class PluginDoesNotExist < RuntimeError; end
+  
+  # The Rackspace Instance searched for does not exist.
+  class RackspaceInstanceDoesNotExist < RuntimeError; end
+  
+  # The Rackspace API had an error.
+  class RackspaceApiError < RuntimeError; end
 end
