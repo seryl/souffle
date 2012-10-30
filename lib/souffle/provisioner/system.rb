@@ -6,11 +6,14 @@ require 'souffle/polling_event'
 class Souffle::Provisioner::System
   attr_accessor :time_used, :provider
 
+  attr_reader :max_failures
+
   state_machine :state, :initial => :initializing do
     after_transition any => :handling_error, :do => :error_handler
     after_transition :initializing => :creating, :do => :create
     after_transition :creating => :provisioning, :do => :provision
     after_transition any => :initializing, :do => :create
+    after_transition :provisioning => :complete, :do => :system_provisioned
 
     event :initialized do
       transition :initializing => :creating
@@ -49,12 +52,14 @@ class Souffle::Provisioner::System
   # @param [ Souffle::Provider::Base ] provider The provider to use.
   # @param [ Fixnum ] max_failures the maximum number of failures.
   # @param [ Fixnum ] timeout The maximum time to wait for node creation.
-  def initialize(system, provider, max_failures=3, timeout=500)
+  def initialize(system, provider, max_failures=3, timeout=1500)
     @failures = 0
     @system = system
     @provider = provider
     @time_used = 0
     @timeout = timeout
+    @max_failures = max_failures
+    @nodes_completed = 0
     super() # NOTE: This is here to initialize state_machine.
   end
 
@@ -110,15 +115,33 @@ class Souffle::Provisioner::System
     end
   end
 
+  # System has completed provisioning.
+  def system_provisioned
+    @system.nodes.each do |n|
+      if n.try_opt(:chef_provisioner).to_s.downcase == "client"
+        n.provisioner.provider.ssh_block(n) do |ssh|
+          ssh.exec!("chef-client")
+        end
+      end
+    end
+    Souffle::Log.info "[#{system_tag}] System provisioned."
+  end
+
+  # Updates the number of nodes provisioned for the system provisioner.
+  def node_provisioned
+    @nodes_completed += 1
+    provisioned if @nodes_completed == @system.nodes.size
+  end
+
   # Kills the system.
   def kill_system
     # @provider.kill(@system.nodes)
   end
 
-  # Handles the error state and recreates the system
+  # Handles the error state and recreates the system.
   def error_handler
     @failures += 1
-    if @failures >= max_failures
+    if @failures >= @max_failures
       Souffle::Log.error "[#{system_tag}] Complete failure. Halting Creation."
       creation_halted
     else
@@ -166,24 +189,9 @@ class Souffle::Provisioner::System
 
   # Wait until all of the nodes are provisioned and then continue.
   def wait_until_complete
-    total_nodes = @system.nodes.size
-    all_complete = false
-    timer = EM::PeriodicTimer.new(2) do
-      nodes_ready = @system.nodes.select do |n|
-        n.provisioner.state == "complete"
-      end.size
-
-      if nodes_ready == total_nodes
-        all_complete = true
-        timer.cancel
-        created
-      end
-    end
-
     EM::Timer.new(@timeout) do
-      unless all_complete
+      unless @nodes_completed == @system.nodes.size
         Souffle::Log.error "[#{system_tag}] System provision timeout reached."
-        timer.cancel
         error_occurred
       end
     end
