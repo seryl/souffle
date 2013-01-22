@@ -665,7 +665,10 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @return [ String ] The device string to mount to.
   def volume_id_to_device(volume_id)
-    "/dev/xvd#{(volume_id + "j".ord).chr}"
+      if volume_id >= 4
+      volume_id += 1
+    end
+    "/dev/xvd#{(volume_id + "a".ord).chr}"
   end
 
   # Takes the volume count in the array and converts it to a device name.
@@ -677,10 +680,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @return [ String ] The device string to mount to.
   def volume_id_to_aws_device(volume_id)
-    if volume_id >= 4
-      volume_id += 1
-    end
-    "/dev/hd#{(volume_id + "a".ord).chr}"
+    "/dev/hd#{(volume_id + "j".ord).chr}"
   end
 
   # Chooses the appropriate formatter for the given filesystem.
