@@ -294,8 +294,8 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ Souffle::Node ] node The node setup raid for.
   def setup_raid(node)
     volume_list = []
-    node.options[:volumes].each_with_index do |volume, index|
-      volume_list << volume_id_to_device(index)
+    n = node; node.options[:volumes].each_with_index do |volume, index|
+      volume_list << volume_id_to_device(node, index)
     end
     create_raid(node, volume_list) { node.provisioner.raid_initialized }
   end
@@ -433,8 +433,10 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
           v[:ebs_status] == "attached"
         end
         if avail.size == @volume_ids.size
-          event_complete
-          node.provisioner.created
+          @provider.map_ebs_volumes(node) do |node|
+            event_complete
+            node.provisioner.created
+          end
         end
       end
 
@@ -444,6 +446,22 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         node.provisioner.error_occurred
       end
     end
+  end
+
+  # Maps all of the ebs volumes to the natural udev device on the host.
+  #
+  # @param [ Souffle::Node ] node The node to map ebs volumes against.
+  def map_ebs_volumes(node)
+    get_ebs_mapping =  "/bin/cat /proc/partitions  "
+    get_ebs_mapping << "| grep -v xvde | grep xvd "
+    get_ebs_mapping << "| awk '{print \$4}'"
+    n = node; ssh_block(node) do |ssh|
+      ebs_vols = ssh.exec!(get_ebs_mapping).split("\n")
+      n.options[:volumes].each_with_index do |vol, index|
+        vol[:local_mapping] = "/dev/#{ebs_vols[index]}"
+      end
+    end
+    yield(node) if block_given?
   end
 
   # Detach and delete all volumes from a given node.
@@ -754,7 +772,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # 
   # @return [ String ] The device string to mount to.
   def volume_id_to_device(volume_id)
-    "/dev/xvd#{(volume_id + 'j'.ord).chr}"
+    node.options[:volumes][volume_id][:local_mapping]
   end
 
   # Takes the volume count in the array and converts it to a device name.
