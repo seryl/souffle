@@ -53,12 +53,12 @@ class Souffle::Http < Sinatra::Base
       :logger => logger)
 
     filters = {}
-    filters[:filters]['tag-key'] = "souffle"
+    filters['tag-key'] = "souffle"
     if Souffle::Config.has_key?(:aws_subnet_id)
-      filters[:filters]['subnet_id'] = Souffle::Config[:aws_subnet_id]
+      filters['subnet-id'] = Souffle::Config[:aws_subnet_id]
     end
 
-    ec2.describe_instances(filters).inject({}) do |slist, instance|
+    ec2.describe_instances(:filters => filters).inject({}) do |slist, instance|
       slist[instance[:tags]["souffle"]] ||= Hash.new
       slist[instance[:tags]["souffle"]][:nodes] ||= Array.new
       slist[instance[:tags]["souffle"]][:user]  ||= instance[:tags]["user"]

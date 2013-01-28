@@ -217,7 +217,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
         @provider = node.provider
         node.options[:volumes].each_with_index do |volume, index|
           @provider.partition_device(
-            node, @provider.volume_id_to_device(index)) do |count|
+            node, @provider.volume_id_to_device(node, index)) do |count|
             @partitions += count
           end
         end
@@ -771,7 +771,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   # @param [ Fixnum ] volume_id The count in the array for the volume id.
   # 
   # @return [ String ] The device string to mount to.
-  def volume_id_to_device(volume_id)
+  def volume_id_to_device(node, volume_id)
     node.options[:volumes][volume_id][:local_mapping]
   end
 
@@ -859,3 +859,4 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
   end
 
 end
+
