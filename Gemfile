@@ -7,8 +7,8 @@ gem "yajl-ruby", "~> 1.1.0"
 gem "eventmachine", "~> 1.0.0"
 gem "amqp", "~> 0.9.7"
 gem "state_machine", "~> 1.1.2"
-gem "em-ssh", "~> 0.4.0"
-gem "em-synchrony", "~> 0.2.0"
+gem "em-ssh", "~> 0.4.3"
+gem "em-synchrony", "~> 1.0.3"
 
 gem "right_aws", "~> 3.0.4"
 gem "tilt", "~> 1.3.3"
@@ -17,9 +17,9 @@ gem "mixlib-cli", ">= 1.2.2"
 gem "mixlib-config", ">= 1.1.0"
 gem "mixlib-log", ">= 1.3.0"
 
-gem "thin", "~> 1.4.1"
-gem "rack", "~> 1.4.1"
-gem "sinatra", "~> 1.3.2"
+gem "thin", "~> 1.5.0"
+gem "rack", "~> 1.5.2"
+gem "sinatra", "~> 1.3.5"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
