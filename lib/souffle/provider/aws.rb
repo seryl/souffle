@@ -339,7 +339,7 @@ class Souffle::Provider::AWS < Souffle::Provider::Base
           instance = ec2.describe_instances(
             node.options[:aws_instance_id]).first
         rescue
-          insance = [{:aws_state => "stopped"}]
+          insance = {:aws_state => "stopped"}
         end
         if instance[:aws_state].downcase == "running"
           event_complete
