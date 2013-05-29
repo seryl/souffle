@@ -44,7 +44,9 @@ class Souffle::Application
     parse_options
 
     begin
-      ::File.open(config[:config_file]) { |f| apply_config(f.path) }
+      if File.exists?(config[:config_file])
+        ::File.open(config[:config_file]) { |f| apply_config(f.path) }
+      end
     rescue Errno::ENOENT => error
       msg =  "Did not find the config file: #{config[:config_file]}"
       msg << ", Using command line options."
