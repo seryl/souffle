@@ -80,7 +80,8 @@ class Souffle::Provisioner::Node
   # 
   # @param [ Souffle::Node ] node The node to manage.
   # @param [ Fixnum ] max_failures The maximum number of failures.
-  def initialize(node, max_failures=3)
+  def initialize(node, max_failures=5)
+    @failures = 0
     @time_used = 0
     @node = node
     @max_failures = max_failures
@@ -143,18 +144,28 @@ class Souffle::Provisioner::Node
   # Kills the node entirely.
   def kill
     Souffle::Log.info "#{@node.log_prefix} Killing node..."
-    provider.kill(@node)
+    provider.kill([@node])
   end
 
   # Kills the node and restarts the creation loop.
   def kill_and_recreate
     Souffle::Log.info "#{@node.log_prefix} Recreating node..."
-    provider.kill_and_recreate(@node)
+    provider.kill_and_recreate([@node])
   end
 
   # Handles any 
   def error_handler
+    @failures+=1
     Souffle::Log.info "#{@node.log_prefix} Handling node error..."
+    if @failures >= @max_failures
+      Souffle::Log.error "[#{@node.log_prefix}] Complete failure. Halting Creation."
+      @node.system.creation_halted
+    else
+      err_msg =  "[#{@node.log_prefix}] Error creating node. "
+      err_msg << "Killing and recreating..."
+      Souffle::Log.error(err_msg)
+      kill_and_recreate_node
+    end
   end
 
   # Helper function for the node's system provider.

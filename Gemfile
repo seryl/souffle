@@ -20,6 +20,7 @@ gem "mixlib-log", ">= 1.3.0"
 gem "thin", "~> 1.4.1"
 gem "rack", "~> 1.4.1"
 gem "sinatra", "~> 1.3.2"
+gem "fog", "~> 1.6.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
@@ -28,6 +29,7 @@ group :development do
   gem "yard", "~> 0.8.5"
   gem "redcarpet", "~> 2.1.1"
   gem "cucumber", ">= 0"
+  gem "bundler", ">= 1.1.0"
   gem "jeweler", "~> 1.8.3"
   gem "ruby-graphviz", :require => "graphviz"
   gem (RUBY_VERSION =~ /^1\.8/ ? "rcov" : "simplecov"), ">= 0"

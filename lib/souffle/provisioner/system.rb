@@ -52,7 +52,7 @@ class Souffle::Provisioner::System
   # @param [ Souffle::Provider::Base ] provider The provider to use.
   # @param [ Fixnum ] max_failures the maximum number of failures.
   # @param [ Fixnum ] timeout The maximum time to wait for node creation.
-  def initialize(system, provider, max_failures=3, timeout=600)
+  def initialize(system, provider, max_failures=3, timeout=1500)
     @failures = 0
     @system = system
     @provider = provider
@@ -117,6 +117,13 @@ class Souffle::Provisioner::System
 
   # System has completed provisioning.
   def system_provisioned
+    @system.nodes.each do |n|
+      if n.try_opt(:chef_provisioner).to_s.downcase == "client"
+        n.provisioner.provider.ssh_block(n) do |ssh|
+          ssh.exec!("chef-client")
+        end
+      end
+    end
     Souffle::Log.info "[#{system_tag}] System provisioned."
   end
 
