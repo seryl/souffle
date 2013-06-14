@@ -65,6 +65,7 @@ class Souffle::Config
 
   # Configuration Settings
   config_file "/etc/souffle/souffle.rb"
+  config_dir  "/etc/souffle"
 
   # Enable debug
   debug false

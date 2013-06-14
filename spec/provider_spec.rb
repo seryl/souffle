@@ -1,7 +1,10 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "Souffle::Provider::Base" do
+  include Helpers
+
   before(:each) do
+    get_config
     @provider = Souffle::Provider::Base.new
   end
 
@@ -29,11 +32,11 @@ describe "Souffle::Provider::Base" do
 
   it "should have an ssh_key_path that matches the provider name" do
     @provider.send(:ssh_key_path).should eql(
-      "/etc/souffle/ssh/#{@provider.name.downcase}")
+      "#{Souffle::Config[:config_dir]}/ssh/#{@provider.name.downcase}")
   end
 
   it "should have a relative ssh key helpers" do
-    base_path = "/etc/souffle/ssh/base"
+    base_path = "#{Souffle::Config[:config_dir]}/ssh/base"
     @provider.send(:ssh_key, "mykey").should eql("#{base_path}/mykey")
   end
 

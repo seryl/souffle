@@ -35,6 +35,7 @@ end
 
 module Helpers
   def get_config
-    Souffle::Config.from_file("/etc/souffle/souffle.rb")
+    Souffle::Config.from_file(
+      "#{File.join(File.dirname(__FILE__), 'config')}/example.rb")
   end
 end

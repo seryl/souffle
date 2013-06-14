@@ -10,6 +10,12 @@ class Souffle::Application::Server < Souffle::Application
     :default => "/etc/souffle/souffle.rb",
     :description => "The configuration file to use"
 
+  option :config_dir,
+    :short => "-d CONFIG_DIR",
+    :long  => "--dir CONFIG_DIR",
+    :default => "/etc/souffle",
+    :description => "The configuration directory to use"
+
   option :log_level,
     :short => "-l LEVEL",
     :long  => "--log_level LEVEL",
